@@ -26,12 +26,15 @@ namespace Csnxs.DeACC
         Return
     }
 
-    class AcsFile
+    partial class AcsFile
     {
         private Stream InputStream;
         private Stream OutputStream;
         public AcsFormat Format { get; private set; }
 
+        private int DirOffset;
+
+        public List<AcsScript> Scripts = new List<AcsScript>();
         public List<string> StringTable = new List<string>();
 
         public AcsFile(Stream stream) : this(stream, AcsFormatIdentifier.IdentifyFormat(stream)) { }
@@ -60,6 +63,7 @@ namespace Csnxs.DeACC
             }
 
             stream.Seek(dirOffset, SeekOrigin.Begin);
+            DirOffset = dirOffset;
 
             if (format == AcsFormat.Acs95)
             {
@@ -102,33 +106,10 @@ namespace Csnxs.DeACC
                 long pos = InputStream.Position;
 
                 InputStream.Seek(pointer, SeekOrigin.Begin);
-
-                int strLen = 0;
-                while (reader.ReadByte() != '\0')
-                {
-                    strLen++;
-                }
-
-                InputStream.Seek(pointer, SeekOrigin.Begin);
-
-                byte[] array = new byte[strLen];
-                for (int c = 0; c < strLen; c++)
-                {
-                    array[c] = reader.ReadByte();
-                }
-
-                string s = Encoding.ASCII.GetString(array);
-                StringTable.Add(s);
-                
-                Console.WriteLine("String " + i + ": " + s);
+                StringTable.Add(ReadString());
 
                 InputStream.Seek(pos, SeekOrigin.Begin);
             }
-        }
-
-        private void ReadZDoomAcs(ref BinaryReader reader)
-        {
-            
         }
 
         public void Disassemble(Stream outputStream)
@@ -145,6 +126,27 @@ namespace Csnxs.DeACC
         {
             byte[] bytes = Encoding.UTF8.GetBytes(line + "\n");
             OutputStream.Write(bytes, 0, bytes.Length);
+        }
+
+        private string ReadString()
+        {
+            long pos = InputStream.Position;
+            int strLen = 0;
+            while (InputStream.ReadByte() != '\0')
+            {
+                strLen++;
+            }
+
+            InputStream.Seek(pos, SeekOrigin.Begin);
+
+            byte[] array = new byte[strLen];
+            for (int c = 0; c < strLen; c++)
+            {
+                array[c] = (byte) InputStream.ReadByte();
+            }
+
+            string s = Encoding.ASCII.GetString(array);
+            return s;
         }
     }
 }
