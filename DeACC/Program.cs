@@ -53,6 +53,12 @@ namespace Csnxs.DeACC
             FileStream stream = new FileStream(path, FileMode.Open);
             AcsFormat format = AcsFormatIdentifier.IdentifyFormat(stream);
 
+            if (format == AcsFormat.NotAcs)
+            {
+                PrintError(path + " is not an ACS file!");
+                return 3;
+            }
+
             Console.WriteLine("Detected format: " + format);
 
             return 0;
