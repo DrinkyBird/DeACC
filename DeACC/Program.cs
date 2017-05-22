@@ -10,8 +10,7 @@ namespace Csnxs.DeACC
     class Program
     {
         #region Command Line Verbs
-
-
+        
         [Verb("disassemble", HelpText = "Disassemble an ACS file")]
         class DisassembleOptions
         {
