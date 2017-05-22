@@ -1,0 +1,150 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Csnxs.DeACC
+{
+    enum ScriptType
+    {
+        Closed,
+        Open,
+        Respawn,
+        Death,
+        Enter,
+        Pickup,
+        BlueReturn,
+        RedReturn,
+        WhiteReturn,
+
+        Lightning = 12,
+        Unloading,
+        Disconnect,
+        Return
+    }
+
+    class AcsFile
+    {
+        private Stream InputStream;
+        private Stream OutputStream;
+        public AcsFormat Format { get; private set; }
+
+        public List<string> StringTable = new List<string>();
+
+        public AcsFile(Stream stream) : this(stream, AcsFormatIdentifier.IdentifyFormat(stream)) { }
+
+        public AcsFile(Stream stream, AcsFormat format)
+        {
+            InputStream = stream;
+            Format = format;
+
+            stream.Seek(4, SeekOrigin.Begin);
+                            
+            BinaryReader reader = new BinaryReader(InputStream);
+            int dirOffset = reader.ReadInt32();
+
+            if (format == AcsFormat.ZDoomLower || format == AcsFormat.ZDoomUpper)
+            {
+                byte[] sig = new byte[4];
+                stream.Seek(dirOffset - 4, SeekOrigin.Begin);
+                reader.Read(sig, 0, 4);
+
+                if (sig[0] == 'A' && sig[1] == 'C' && sig[2] == 'S' && (sig[3] == 'E' || sig[3] == 'e'))
+                {
+                    stream.Seek(dirOffset - 8, SeekOrigin.Begin);
+                    dirOffset = reader.ReadInt32();
+                }
+            }
+
+            stream.Seek(dirOffset, SeekOrigin.Begin);
+
+            if (format == AcsFormat.Acs95)
+            {
+                ReadAcs95(ref reader);
+            }
+            else
+            {
+                ReadZDoomAcs(ref reader);
+            }
+
+            reader.Dispose();
+        }
+
+        private void ReadAcs95(ref BinaryReader reader)
+        {
+            int numPointers = reader.ReadInt32();
+            for (int i = 0; i < numPointers; i++)
+            {
+                int number = reader.ReadInt32();
+                int pointer = reader.ReadInt32();
+                int argc = reader.ReadInt32();
+
+                int id = number % 1000;
+                int typeNum = number / 1000;
+                ScriptType type = (ScriptType) typeNum;
+
+                Console.WriteLine("Script " + id + " is of type " + type);
+
+                long pos = InputStream.Position;
+
+                InputStream.Seek(pointer, SeekOrigin.Begin);
+                
+                InputStream.Seek(pos, SeekOrigin.Begin);
+            }
+
+            int stringCount = reader.ReadInt32();
+            for (int i = 0; i < stringCount; i++)
+            {
+                int pointer = reader.ReadInt32();
+                long pos = InputStream.Position;
+
+                InputStream.Seek(pointer, SeekOrigin.Begin);
+
+                int strLen = 0;
+                while (reader.ReadByte() != '\0')
+                {
+                    strLen++;
+                }
+
+                InputStream.Seek(pointer, SeekOrigin.Begin);
+
+                byte[] array = new byte[strLen];
+                for (int c = 0; c < strLen; c++)
+                {
+                    array[c] = reader.ReadByte();
+                }
+
+                string s = Encoding.ASCII.GetString(array);
+                StringTable.Add(s);
+                
+                Console.WriteLine("String " + i + ": " + s);
+
+                InputStream.Seek(pos, SeekOrigin.Begin);
+            }
+        }
+
+        private void ReadZDoomAcs(ref BinaryReader reader)
+        {
+            
+        }
+
+        public void Disassemble(Stream outputStream)
+        {
+            OutputStream = outputStream;
+
+            AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
+
+            WriteLine("// Disassembled by " + assemblyName.Name + " version " + assemblyName.Version);
+            WriteLine();
+        }
+
+        private void WriteLine(string line = "")
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(line + "\n");
+            OutputStream.Write(bytes, 0, bytes.Length);
+        }
+    }
+}

@@ -46,27 +46,25 @@ namespace Csnxs.DeACC
             else if (sig[3] == '\0')
             {
                 stream.Seek(4, SeekOrigin.Begin);
-                using (BinaryReader reader = new BinaryReader(stream))
+                BinaryReader reader = new BinaryReader(stream);
+                int dirOffset = reader.ReadInt32();
+
+                stream.Seek(dirOffset - 4, SeekOrigin.Begin);
+                stream.Read(sig, 0, 4);
+                stream.Seek(originalPos, SeekOrigin.Begin);
+
+                if (sig[0] != 'A' || sig[1] != 'C' || sig[2] != 'S')
                 {
-                    int dirOffset = reader.ReadInt32();
+                    return AcsFormat.Acs95;
+                }
 
-                    stream.Seek(dirOffset - 4, SeekOrigin.Begin);
-                    stream.Read(sig, 0, 4);
-                    stream.Seek(originalPos, SeekOrigin.Begin);
-
-                    if (sig[0] != 'A' || sig[1] != 'C' || sig[2] != 'S')
-                    {
-                        return AcsFormat.Acs95;
-                    }
-
-                    if (sig[3] == 'e')
-                    {
-                        return AcsFormat.ZDoomLower;
-                    }
-                    else if (sig[3] == 'E')
-                    {
-                        return AcsFormat.ZDoomUpper;
-                    }
+                if (sig[3] == 'e')
+                {
+                    return AcsFormat.ZDoomLower;
+                }
+                else if (sig[3] == 'E')
+                {
+                    return AcsFormat.ZDoomUpper;
                 }
             }
 

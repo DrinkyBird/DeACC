@@ -15,6 +15,9 @@ namespace Csnxs.DeACC
         [Verb("disassemble", HelpText = "Disassemble an ACS file")]
         class DisassembleOptions
         {
+            [Option('o', "output-file", HelpText = "File to output the disassembled code to", Required = true)]
+            public string OutputFile { get; set; }
+
             [Value(0, MetaName = "file", HelpText = "Compiled ACS object file", Required = true)]
             public string FileName { get; set; }
         }
@@ -43,23 +46,32 @@ namespace Csnxs.DeACC
 
         private int Disassemble(DisassembleOptions options)
         {
-            string path = options.FileName;
+            string path = Path.GetFullPath(options.FileName);
             if (!File.Exists(path))
             {
                 PrintError("File does not exist: " + path);
                 return 2;
             }
 
-            FileStream stream = new FileStream(path, FileMode.Open);
+            FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read);
             AcsFormat format = AcsFormatIdentifier.IdentifyFormat(stream);
 
             if (format == AcsFormat.NotAcs)
             {
+                stream.Dispose();
                 PrintError(path + " is not an ACS file!");
                 return 3;
             }
 
             Console.WriteLine("Detected format: " + format);
+
+            FileStream outputStream = new FileStream(Path.GetFullPath(options.OutputFile), FileMode.OpenOrCreate, FileAccess.Write);
+
+            AcsFile file = new AcsFile(stream, format);
+            file.Disassemble(outputStream);
+
+            outputStream.Dispose();
+            stream.Dispose();
 
             return 0;
         }
