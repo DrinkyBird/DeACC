@@ -119,7 +119,12 @@ namespace Csnxs.DeACC
             AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
 
             WriteLine("// Disassembled by " + assemblyName.Name + " version " + assemblyName.Version);
-            WriteLine();
+            WriteLine("//");
+            WriteLine("// String Table:");
+            for (int i = 0; i < StringTable.Count; i++)
+            {
+                WriteLine(String.Format("//   {0,4} " + StringTable[i], i));
+            }
         }
 
         private void WriteLine(string line = "")
