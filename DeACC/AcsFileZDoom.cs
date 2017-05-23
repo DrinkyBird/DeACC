@@ -18,6 +18,8 @@ namespace Csnxs.DeACC
         private Dictionary<int, int[]> MapArrays = new Dictionary<int, int[]>();
         private Dictionary<int, ImportedArray> ImportedMapArrays = new Dictionary<int, ImportedArray>();
         private Dictionary<int, int> MapVariables = new Dictionary<int, int>();
+        private List<AcsFunction> FunctionList = new List<AcsFunction>();
+        private Dictionary<string, AcsFunction> FunctionMap = new Dictionary<string, AcsFunction>();
 
         private void ReadZDoomAcs(ref BinaryReader reader)
         {
@@ -42,11 +44,13 @@ namespace Csnxs.DeACC
                 if (name == "ARAY") ReadARAY(size, ref reader);
                 else if (name == "AINI") ReadAINI(size, ref reader);
                 else if (name == "AIMP") ReadAIMP(size, ref reader);
+                else if (name == "FUNC") ReadFUNC(size, ref reader);
+                else if (name == "FNAM") ReadFNAM(size, ref reader);
                 else if (name == "MINI") ReadMINI(size, ref reader);
                 else if (name == "SPTR") ReadSPTR(size, ref reader);
-                else if (name == "SFLG") ReadSPTR(size, ref reader);
-                else if (name == "STRL") ReadSTRL(size, ref reader);
-                else if (name == "STRE") ReadSTRE(size, ref reader);
+                else if (name == "SFLG") ReadSFLG(size, ref reader);
+                else if (name == "STRL") StringTable.AddRange(ReadStringTable(ref reader, false, true));
+                else if (name == "STRE") StringTable.AddRange(ReadStringTable(ref reader, true, true));
                 else
                 {
                     Program.PrintError("Not implemented.");
@@ -54,6 +58,34 @@ namespace Csnxs.DeACC
                 }
 
                 InputStream.Seek(pos + size, SeekOrigin.Begin);
+            }
+        }
+
+        private void ReadFUNC(int size, ref BinaryReader reader)
+        {
+            int numFuncs = size / 8;
+
+            for (int i = 0; i < numFuncs; i++)
+            {
+                int argc = reader.ReadByte();
+                int varc = reader.ReadByte();
+                bool returns = reader.ReadByte() == 0x01;
+                reader.ReadByte();
+                int address = reader.ReadInt32();
+
+                AcsFunction func = new AcsFunction(argc, varc, returns);
+                FunctionList.Add(func);
+            }
+        }
+
+        private void ReadFNAM(int size, ref BinaryReader reader)
+        {
+            string[] names = ReadStringTable(ref reader, false, false);
+            Console.WriteLine("Read names");
+
+            for (int i = 0; i < names.Length; i++)
+            {
+                FunctionMap[names[i]] = FunctionList[i];
             }
         }
 
@@ -133,8 +165,6 @@ namespace Csnxs.DeACC
                     int argc = reader.ReadByte();
                     int address = reader.ReadInt32();
 
-                    Console.WriteLine($"Script {number} {type}, {argc} args, 0x{address:x8}");
-
                     AcsScript script = new AcsScript(number, type, argc);
                     Scripts[number] = script;
                 }
@@ -149,7 +179,6 @@ namespace Csnxs.DeACC
                     ScriptType type = (ScriptType)reader.ReadInt16();
                     int address = reader.ReadInt32();
                     int argc = reader.ReadInt32();
-                    Console.WriteLine($"Script {number} {type}, {argc} args, 0x{address:x8}");
 
                     AcsScript script = new AcsScript(number, type, argc);
                     Scripts[number] = script;
@@ -170,14 +199,16 @@ namespace Csnxs.DeACC
             }
         }
 
-        private void ReadSTRL(int size, ref BinaryReader reader)
+        private string[] ReadStringTable(ref BinaryReader reader, bool encrypted, bool wastedInts)
         {
             long baseOffset = InputStream.Position;
-            reader.ReadInt32();
+            if (wastedInts) reader.ReadInt32();
 
             int numStrings = reader.ReadInt32();
 
-            reader.ReadInt32();
+            if (wastedInts) reader.ReadInt32();
+
+            string[] list = new string[numStrings];
 
             for (int i = 0; i < numStrings; i++)
             {
@@ -185,47 +216,44 @@ namespace Csnxs.DeACC
                 long pos = InputStream.Position;
 
                 InputStream.Seek(baseOffset + pointer, SeekOrigin.Begin);
-                StringTable.Add(ReadString());
-                InputStream.Seek(pos, SeekOrigin.Begin);
-            }
-        }
 
-        private void ReadSTRE(int size, ref BinaryReader reader)
-        {
-            long baseOffset = InputStream.Position;
-            reader.ReadInt32();
+                string s;
 
-            int numStrings = reader.ReadInt32();
-
-            reader.ReadInt32();
-
-            for (int i = 0; i < numStrings; i++)
-            {
-                int pointer = reader.ReadInt32();
-                long pos = InputStream.Position;
-
-                int key = pointer * 157135;
-
-                InputStream.Seek(baseOffset + pointer, SeekOrigin.Begin);
-
-                int length = 0;
-                while ((byte)(reader.ReadByte() ^ (key + (length / 2))) != '\0')
+                if (encrypted)
                 {
-                    length++;
+                    int key = pointer * 157135;
+
+                    InputStream.Seek(baseOffset + pointer, SeekOrigin.Begin);
+
+                    int length = 0;
+                    while ((byte)(reader.ReadByte() ^ (key + (length / 2))) != '\0')
+                    {
+                        length++;
+                    }
+
+                    byte[] array = new byte[length];
+
+                    InputStream.Seek(baseOffset + pointer, SeekOrigin.Begin);
+                    for (int j = 0; j < array.Length; j++)
+                    {
+                        array[j] = (byte)(reader.ReadByte() ^ (key + (j / 2)));
+                    }
+
+                    s = Encoding.ASCII.GetString(array);
+                }
+                else
+                {
+                    s = ReadString();
                 }
 
-                byte[] array = new byte[length];
+                Console.WriteLine($"#{i}/{numStrings} = {s}");
 
-                InputStream.Seek(baseOffset + pointer, SeekOrigin.Begin);
-                for (int j = 0; j < array.Length; j++)
-                {
-                    array[j] = (byte) (reader.ReadByte() ^ (key + (j / 2)));
-                }
-
-                StringTable.Add(Encoding.ASCII.GetString(array));
+                list[i] = s;
 
                 InputStream.Seek(pos, SeekOrigin.Begin);
             }
+
+            return list;
         }
     }
 }

@@ -52,6 +52,7 @@
     <Compile Include="AcsFile.cs" />
     <Compile Include="AcsFileZDoom.cs" />
     <Compile Include="AcsFormatIdentifier.cs" />
+    <Compile Include="AcsFunction.cs" />
     <Compile Include="AcsScript.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

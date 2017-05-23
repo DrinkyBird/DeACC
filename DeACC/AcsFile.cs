@@ -123,6 +123,7 @@ namespace Csnxs.DeACC
                 WriteLine("#include \"zcommon.acs\"");
             }
 
+            WriteLine("// ================================================== MAP ARRAYS");
             WriteLine();
 
             foreach (KeyValuePair<int, int[]> pair in MapArrays)
@@ -144,6 +145,8 @@ namespace Csnxs.DeACC
             }
 
             WriteLine();
+            WriteLine("// ================================================== MAP VARIABLES");
+            WriteLine();
 
             foreach (KeyValuePair<int, int> pair in MapVariables)
             {
@@ -154,44 +157,89 @@ namespace Csnxs.DeACC
             }
 
             WriteLine();
+            WriteLine("// ================================================== FUNCTIONS");
+            WriteLine();
+
+            foreach (KeyValuePair<string, AcsFunction> pair in FunctionMap)
+            {
+                string name = pair.Key;
+                AcsFunction function = pair.Value;
+
+                string returnType = (function.Returns ? "int" : "void");
+                string args;
+
+                if (function.NumberOfArguments > 1)
+                {
+                    args = "";
+                    for (int i = 0; i < function.NumberOfArguments; i++)
+                    {
+                        args += $"int _p_{ParameterCounter:x4}_";
+                        ParameterCounter++;
+
+                        if (i < function.NumberOfArguments - 1)
+                        {
+                            args += ", ";
+                        }
+                    }
+                }
+                else
+                {
+                    args = "void";
+                }
+
+                WriteLine($"function {returnType} {name} ({args})");
+                WriteLine("{");
+                WriteLine();
+                WriteLine("}");
+                WriteLine();
+            }
+
+            WriteLine();
+            WriteLine("// ================================================== SCRIPTS");
+            WriteLine();
 
             foreach (KeyValuePair<int, AcsScript> pair in Scripts)
             {
                 int number = pair.Key;
                 AcsScript script = pair.Value;
 
-                Write($"Script {number} ");
+                string args = "void";
+                string type = "";
+                string flags = "";
 
                 if (script.NumberOfArguments > 0)
                 {
-                    Write("(");
+                    args = "";
                     for (int i = 0; i < script.NumberOfArguments; i++)
                     {
-                        Write($"int _p_{ParameterCounter:x4}_");
+                        args += $"int _p_{ParameterCounter:x4}_";
                         ParameterCounter++;
 
                         if (i < script.NumberOfArguments - 1)
                         {
-                            Write(", ");
+                            args += ", ";
                         }
                     }
-                    Write(") ");
                 }
 
                 if (script.Type != ScriptType.Closed)
                 {
-                    Write(script.Type.ToString().ToUpper() + " ");
+                    type = script.Type.ToString().ToUpper();
                 }
 
                 if ((script.Flags & (int)ScriptFlags.Net) != 0)
                 {
-                    Write("NET ");
+                    flags += "NET ";
                 }
 
                 if ((script.Flags & (int)ScriptFlags.Clientside) != 0)
                 {
-                    Write("CLIENTSIDE ");
+                    flags += "CLIENTSIDE ";
                 }
+
+                string typeSpace = (script.Type != ScriptType.Closed ? " " : "");
+
+                WriteLine($"Script {number} ({args}){typeSpace}{type} {flags}");
 
                 WriteLine();
                 WriteLine("{");
@@ -216,7 +264,7 @@ namespace Csnxs.DeACC
         {
             long pos = InputStream.Position;
             int strLen = 0;
-            while (InputStream.ReadByte() != '\0')
+            while (InputStream.ReadByte() != 0)
             {
                 strLen++;
             }
