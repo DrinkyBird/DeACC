@@ -43,6 +43,8 @@ namespace Csnxs.DeACC
                 else if (name == "AINI") ReadAINI(size, ref reader);
                 else if (name == "AIMP") ReadAIMP(size, ref reader);
                 else if (name == "MINI") ReadMINI(size, ref reader);
+                else if (name == "SPTR") ReadSPTR(size, ref reader);
+                else if (name == "SFLG") ReadSPTR(size, ref reader);
                 else if (name == "STRL") ReadSTRL(size, ref reader);
                 else if (name == "STRE") ReadSTRE(size, ref reader);
                 else
@@ -115,6 +117,56 @@ namespace Csnxs.DeACC
                 int value = reader.ReadInt32();
 
                 MapVariables[index] = value;
+            }
+        }
+
+        private void ReadSPTR(int size, ref BinaryReader reader)
+        {
+            if (HexenFaked)
+            {
+                int numScripts = size / 8;
+
+                for (int i = 0; i < numScripts; i++)
+                {
+                    short number = reader.ReadInt16();
+                    ScriptType type = (ScriptType)reader.ReadByte();
+                    int argc = reader.ReadByte();
+                    int address = reader.ReadInt32();
+
+                    Console.WriteLine($"Script {number} {type}, {argc} args, 0x{address:x8}");
+
+                    AcsScript script = new AcsScript(number, type, argc);
+                    Scripts[number] = script;
+                }
+            }
+            else
+            {
+                int numScripts = size / 12;
+
+                for (int i = 0; i < numScripts; i++)
+                {
+                    short number = reader.ReadInt16();
+                    ScriptType type = (ScriptType)reader.ReadInt16();
+                    int address = reader.ReadInt32();
+                    int argc = reader.ReadInt32();
+                    Console.WriteLine($"Script {number} {type}, {argc} args, 0x{address:x8}");
+
+                    AcsScript script = new AcsScript(number, type, argc);
+                    Scripts[number] = script;
+                }
+            }
+        }
+
+        private void ReadSFLG(int size, ref BinaryReader reader)
+        {
+            int numScripts = size / 8;
+
+            for (int i = 0; i < numScripts; i++)
+            {
+                short number = reader.ReadInt16();
+                int flags = reader.ReadInt16();
+
+                Scripts[number].Flags = flags;
             }
         }
 

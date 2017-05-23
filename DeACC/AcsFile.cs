@@ -8,24 +8,6 @@ using System.Threading.Tasks;
 
 namespace Csnxs.DeACC
 {
-    enum ScriptType
-    {
-        Closed,
-        Open,
-        Respawn,
-        Death,
-        Enter,
-        Pickup,
-        BlueReturn,
-        RedReturn,
-        WhiteReturn,
-
-        Lightning = 12,
-        Unloading,
-        Disconnect,
-        Return
-    }
-
     partial class AcsFile
     {
         private Stream InputStream;
@@ -33,11 +15,14 @@ namespace Csnxs.DeACC
         public AcsFormat Format { get; private set; }
 
         private int DirOffset;
+        private bool HexenFaked = false;
 
-        public List<AcsScript> Scripts = new List<AcsScript>();
+        public Dictionary<int, AcsScript> Scripts = new Dictionary<int, AcsScript>();
         public List<string> StringTable = new List<string>();
 
         public AcsFile(Stream stream) : this(stream, AcsFormatIdentifier.IdentifyFormat(stream)) { }
+
+        private int ParameterCounter = 0;
 
         public AcsFile(Stream stream, AcsFormat format)
         {
@@ -57,6 +42,7 @@ namespace Csnxs.DeACC
 
                 if (sig[0] == 'A' && sig[1] == 'C' && sig[2] == 'S' && (sig[3] == 'E' || sig[3] == 'e'))
                 {
+                    HexenFaked = true;
                     stream.Seek(dirOffset - 8, SeekOrigin.Begin);
                     dirOffset = reader.ReadInt32();
                 }
@@ -165,6 +151,53 @@ namespace Csnxs.DeACC
                 int value = pair.Value;
 
                 WriteLine($"int _m_{index:x4}_ = {value};");
+            }
+
+            WriteLine();
+
+            foreach (KeyValuePair<int, AcsScript> pair in Scripts)
+            {
+                int number = pair.Key;
+                AcsScript script = pair.Value;
+
+                Write($"Script {number} ");
+
+                if (script.NumberOfArguments > 0)
+                {
+                    Write("(");
+                    for (int i = 0; i < script.NumberOfArguments; i++)
+                    {
+                        Write($"int _p_{ParameterCounter:x4}_");
+                        ParameterCounter++;
+
+                        if (i < script.NumberOfArguments - 1)
+                        {
+                            Write(", ");
+                        }
+                    }
+                    Write(") ");
+                }
+
+                if (script.Type != ScriptType.Closed)
+                {
+                    Write(script.Type.ToString().ToUpper() + " ");
+                }
+
+                if ((script.Flags & (int)ScriptFlags.Net) != 0)
+                {
+                    Write("NET ");
+                }
+
+                if ((script.Flags & (int)ScriptFlags.Clientside) != 0)
+                {
+                    Write("CLIENTSIDE ");
+                }
+
+                WriteLine();
+                WriteLine("{");
+                WriteLine("");
+                WriteLine("}");
+                WriteLine();
             }
         }
 
