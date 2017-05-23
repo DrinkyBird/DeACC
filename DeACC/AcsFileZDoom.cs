@@ -15,11 +15,28 @@ namespace Csnxs.DeACC
             public string Name;
         }
 
-        private Dictionary<int, int[]> MapArrays = new Dictionary<int, int[]>();
+        struct MapVariable
+        {
+            public string Name;
+            public int Value;
+            public bool IsString;
+        }
+
+        struct MapArray
+        {
+            public int[] Values;
+            public string Name;
+            public bool IsString;
+        }
+
+        private Dictionary<int, MapArray> MapArrays = new Dictionary<int, MapArray>();
+        private Dictionary<int, bool> ArrayIsStringCache = new Dictionary<int, bool>();
         private Dictionary<int, ImportedArray> ImportedMapArrays = new Dictionary<int, ImportedArray>();
-        private Dictionary<int, int> MapVariables = new Dictionary<int, int>();
+        private Dictionary<int, MapVariable> MapVariables = new Dictionary<int, MapVariable>();
         private List<AcsFunction> FunctionList = new List<AcsFunction>();
         private Dictionary<string, AcsFunction> FunctionMap = new Dictionary<string, AcsFunction>();
+        private Dictionary<int, string> ImportedMapVariables = new Dictionary<int, string>();
+        private List<string> Libraries = new List<string>();
 
         private void ReadZDoomAcs(ref BinaryReader reader)
         {
@@ -44,13 +61,18 @@ namespace Csnxs.DeACC
                 if (name == "ARAY") ReadARAY(size, ref reader);
                 else if (name == "AINI") ReadAINI(size, ref reader);
                 else if (name == "AIMP") ReadAIMP(size, ref reader);
+                else if (name == "ASTR") ReadASTR(size, ref reader);
                 else if (name == "FUNC") ReadFUNC(size, ref reader);
                 else if (name == "FNAM") ReadFNAM(size, ref reader);
+                else if (name == "MEXP") ReadMEXP(size, ref reader);
                 else if (name == "MINI") ReadMINI(size, ref reader);
+                else if (name == "MIMP") ReadMIMP(size, ref reader);
+                else if (name == "MSTR") ReadMSTR(size, ref reader);
                 else if (name == "SPTR") ReadSPTR(size, ref reader);
                 else if (name == "SFLG") ReadSFLG(size, ref reader);
                 else if (name == "STRL") StringTable.AddRange(ReadStringTable(ref reader, false, true));
                 else if (name == "STRE") StringTable.AddRange(ReadStringTable(ref reader, true, true));
+                else if (name == "LOAD") ReadLOAD(size, ref reader);
                 else
                 {
                     Program.PrintError("Not implemented.");
@@ -58,6 +80,75 @@ namespace Csnxs.DeACC
                 }
 
                 InputStream.Seek(pos + size, SeekOrigin.Begin);
+            }
+        }
+
+        private void ReadLOAD(int size, ref BinaryReader reader)
+        {
+            long start = InputStream.Position;
+
+            while (InputStream.Position - start < size - 1)
+            {
+                Libraries.Add(ReadString());
+            }
+        }
+
+        private void ReadMSTR(int size, ref BinaryReader reader)
+        {
+            int num = size / 4;
+            for (int i = 0; i < num; i++)
+            {
+                int index = reader.ReadInt32();
+                MapVariable v = MapVariables[index];
+                v.IsString = true;
+                MapVariables[index] = v;
+            }
+        }
+
+        private void ReadASTR(int size, ref BinaryReader reader)
+        {
+            int num = size / 4;
+            for (int i = 0; i < num; i++)
+            {
+                int index = reader.ReadInt32();
+
+                if (MapArrays.ContainsKey(index))
+                {
+                    MapArray v = MapArrays[index];
+                    v.IsString = true;
+                    MapArrays[index] = v;
+                }
+                else
+                {
+                    ArrayIsStringCache[index] = true;
+                }
+            }
+        }
+
+        private void ReadMEXP(int size, ref BinaryReader reader)
+        {
+            string[] names = ReadStringTable(ref reader, false, false);
+
+            for (int i = 0; i < MapVariables.Count; i++)
+            {
+                Console.WriteLine($"{i} = {names[i]}; ${MapVariables.Count}");
+                if (MapVariables.ContainsKey(i))
+                {
+                    MapVariable v = MapVariables[i];
+                    v.Name = names[i];
+                    MapVariables[i] = v;
+                }
+            }
+
+            for (int i = MapVariables.Count; i < MapArrays.Count; i++)
+            {
+                Console.WriteLine($"{i} = {names[i]}; ${MapVariables.Count}");
+                if (MapArrays.ContainsKey(i))
+                {
+                    MapArray v = MapArrays[i];
+                    v.Name = names[i];
+                    MapArrays[i] = v;
+                }
             }
         }
 
@@ -98,7 +189,16 @@ namespace Csnxs.DeACC
                 int num = reader.ReadInt32();
                 int arraySize = reader.ReadInt32();
 
-                MapArrays[num] = new int[arraySize];
+                MapArray a = new MapArray();
+                a.Values = new int[arraySize];
+                a.IsString = false;
+
+                if (ArrayIsStringCache.ContainsKey(num))
+                {
+                    a.IsString = true;
+                }
+
+                MapArrays[num] = a;
             }
         }
 
@@ -116,10 +216,11 @@ namespace Csnxs.DeACC
             
             int num = (reader.ReadInt32() - 4) / 4;
             int index = reader.ReadInt32();
+            MapArray b = MapArrays[index];
             for (int i = 0; i < num; i++)
             {
                 int v = reader.ReadInt32();
-                MapArrays[index][i] = v;
+                b.Values[i] = v;
             }
         }
 
@@ -148,7 +249,21 @@ namespace Csnxs.DeACC
                 int index = reader.ReadInt32();
                 int value = reader.ReadInt32();
 
-                MapVariables[index] = value;
+                MapVariable v = new MapVariable();
+                v.Name = null;
+                v.Value = value;
+                v.IsString = false;
+
+                MapVariables[index] = v;
+            }
+        }
+
+        private void ReadMIMP(int size, ref BinaryReader reader)
+        {
+            long start = InputStream.Position;
+            while ((InputStream.Position - start) < size - 1)
+            {
+                ImportedMapVariables[reader.ReadInt32()] = ReadString();
             }
         }
 
@@ -245,8 +360,6 @@ namespace Csnxs.DeACC
                 {
                     s = ReadString();
                 }
-
-                Console.WriteLine($"#{i}/{numStrings} = {s}");
 
                 list[i] = s;
 

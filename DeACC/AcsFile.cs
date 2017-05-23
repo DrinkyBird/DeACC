@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.SqlServer.Server;
 
 namespace Csnxs.DeACC
 {
@@ -123,18 +124,60 @@ namespace Csnxs.DeACC
                 WriteLine("#include \"zcommon.acs\"");
             }
 
+            WriteLine();
+            foreach (var library in Libraries)
+            {
+                WriteLine($"#import \"{library}\"");
+            }
+            WriteLine();
+
             WriteLine("// ================================================== MAP ARRAYS");
             WriteLine();
 
-            foreach (KeyValuePair<int, int[]> pair in MapArrays)
+            if (ImportedMapArrays.Count > 0)
+            {
+                WriteLine($"/* Imported map arrays ({ImportedMapArrays.Count}:");
+                foreach (KeyValuePair<int, ImportedArray> pair in ImportedMapArrays)
+                {
+                    int index = pair.Key;
+                    ImportedArray array = pair.Value;
+
+                    WriteLine($"/* imported - index {index:x4} */ int {array.Name}[{array.Size}];");
+                }
+                WriteLine("//*/");
+            }
+
+            foreach (var pair in MapArrays)
             {
                 int index = pair.Key;
-                int[] array = pair.Value;
+                MapArray mapArray = pair.Value;
+                int[] array = mapArray.Values;
 
-                Write($"int _a_{index:x4}_[{array.Length}] = " + "{");
+                string name = (!String.IsNullOrEmpty(mapArray.Name) ? mapArray.Name : $"_a_{index:x4}_");
+                string type = (mapArray.IsString ? "str" : "int");
+
+                Write($"{type} {name}[{array.Length}] = " + "{");
                 for (int i = 0; i < array.Length; i++)
                 {
-                    Write(array[i].ToString());
+                    if (mapArray.IsString)
+                    {
+                        string s;
+                        int sI = array[i];
+
+                        if (sI < StringTable.Count)
+                        {
+                            s = StringTable[array[i]];
+                        }
+                        else
+                        {
+                            s = "(DeACC: Invalid string index " + sI + ")";
+                        }
+                        Write($"\"{s}\"");
+                    }
+                    else
+                    {
+                        Write(array[i].ToString());
+                    }
 
                     if (i < array.Length - 1)
                     {
@@ -148,12 +191,28 @@ namespace Csnxs.DeACC
             WriteLine("// ================================================== MAP VARIABLES");
             WriteLine();
 
-            foreach (KeyValuePair<int, int> pair in MapVariables)
+            if (ImportedMapVariables.Count > 0)
+            {
+                WriteLine($"/* Imported map variables ({ImportedMapVariables.Count}:");
+                foreach (KeyValuePair<int, string> pair in ImportedMapVariables)
+                {
+                    int index = pair.Key;
+                    string name = pair.Value;
+
+                    WriteLine($"int {name}; // imported - index {index:x4}");
+                }
+                WriteLine("//*/");
+            }
+
+            foreach (var pair in MapVariables)
             {
                 int index = pair.Key;
-                int value = pair.Value;
+                MapVariable var = pair.Value;
 
-                WriteLine($"int _m_{index:x4}_ = {value};");
+                string name = (!String.IsNullOrEmpty(var.Name) ? var.Name : $"_m_{index:x4}_");
+                string type = (var.IsString ? "str" : "int");
+
+                WriteLine($"{type} {name} = {var.Value};");
             }
 
             WriteLine();

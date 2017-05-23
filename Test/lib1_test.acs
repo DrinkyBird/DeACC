@@ -1,0 +1,7 @@
+#include "zcommon.acs"
+#import "lib1.acs"
+
+Script 124 OPEN
+{
+	Log(d: lib1_mapvar);
+}

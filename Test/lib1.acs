@@ -1,0 +1,23 @@
+#library "lib1"
+#include "zcommon.acs"
+
+int lib1_array[64];
+str lib1_strarray[3] = {"String 1", "String 2", "String 3"};
+
+str lib1_mapstr = "asdf";
+int lib1_mapvar = 123;
+
+function int lib1_func(int a)
+{
+	return -a;
+}
+
+Script 123 OPEN
+{
+	Log(s: "Lib1 numbered script");
+}
+
+Script "Lib1 Named Script" OPEN
+{
+	Print(d: lib1_mapvar);
+}
