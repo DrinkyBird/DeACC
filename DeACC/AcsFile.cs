@@ -123,14 +123,60 @@ namespace Csnxs.DeACC
             WriteLine("// String Table:");
             for (int i = 0; i < StringTable.Count; i++)
             {
-                WriteLine(String.Format("//   {0,4} " + StringTable[i], i));
+                WriteLine("//   "+ i + " " + StringTable[i]);
             }
+
+            WriteLine();
+
+            if (Format == AcsFormat.Acs95)
+            {
+                WriteLine("#include \"common.acs\"");
+            }
+            else
+            {
+                WriteLine("#include \"zcommon.acs\"");
+            }
+
+            WriteLine();
+
+            foreach (KeyValuePair<int, int[]> pair in MapArrays)
+            {
+                int index = pair.Key;
+                int[] array = pair.Value;
+
+                Write($"int _a_{index:x4}_[{array.Length}] = " + "{");
+                for (int i = 0; i < array.Length; i++)
+                {
+                    Write(array[i].ToString());
+
+                    if (i < array.Length - 1)
+                    {
+                        Write(", ");
+                    }
+                }
+                WriteLine("};");
+            }
+
+            WriteLine();
+
+            foreach (KeyValuePair<int, int> pair in MapVariables)
+            {
+                int index = pair.Key;
+                int value = pair.Value;
+
+                WriteLine($"int _m_{index:x4}_ = {value};");
+            }
+        }
+
+        private void Write(string line = "")
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(line);
+            OutputStream.Write(bytes, 0, bytes.Length);
         }
 
         private void WriteLine(string line = "")
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(line + "\n");
-            OutputStream.Write(bytes, 0, bytes.Length);
+            Write(line + "\n");
         }
 
         private string ReadString()

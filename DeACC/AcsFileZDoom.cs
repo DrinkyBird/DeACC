@@ -43,6 +43,8 @@ namespace Csnxs.DeACC
                 else if (name == "AINI") ReadAINI(size, ref reader);
                 else if (name == "AIMP") ReadAIMP(size, ref reader);
                 else if (name == "MINI") ReadMINI(size, ref reader);
+                else if (name == "STRL") ReadSTRL(size, ref reader);
+                else if (name == "STRE") ReadSTRE(size, ref reader);
                 else
                 {
                     Program.PrintError("Not implemented.");
@@ -56,7 +58,6 @@ namespace Csnxs.DeACC
         private void ReadARAY(int size, ref BinaryReader reader)
         {
             int numArrays = size / 8;
-            Console.WriteLine("\t" + numArrays + " arrays:");
 
             for (int i = 0; i < numArrays; i++)
             {
@@ -64,8 +65,6 @@ namespace Csnxs.DeACC
                 int arraySize = reader.ReadInt32();
 
                 MapArrays[num] = new int[arraySize];
-
-                Console.WriteLine("\t\t" + num + ": " + arraySize);
             }
         }
 
@@ -83,11 +82,9 @@ namespace Csnxs.DeACC
             
             int num = (reader.ReadInt32() - 4) / 4;
             int index = reader.ReadInt32();
-            Console.WriteLine("\t#" + index);
             for (int i = 0; i < num; i++)
             {
                 int v = reader.ReadInt32();
-                Console.WriteLine("\t\t" + i + ": " + v);
                 MapArrays[index][i] = v;
             }
         }
@@ -118,6 +115,64 @@ namespace Csnxs.DeACC
                 int value = reader.ReadInt32();
 
                 MapVariables[index] = value;
+            }
+        }
+
+        private void ReadSTRL(int size, ref BinaryReader reader)
+        {
+            long baseOffset = InputStream.Position;
+            reader.ReadInt32();
+
+            int numStrings = reader.ReadInt32();
+
+            reader.ReadInt32();
+
+            for (int i = 0; i < numStrings; i++)
+            {
+                int pointer = reader.ReadInt32();
+                long pos = InputStream.Position;
+
+                InputStream.Seek(baseOffset + pointer, SeekOrigin.Begin);
+                StringTable.Add(ReadString());
+                InputStream.Seek(pos, SeekOrigin.Begin);
+            }
+        }
+
+        private void ReadSTRE(int size, ref BinaryReader reader)
+        {
+            long baseOffset = InputStream.Position;
+            reader.ReadInt32();
+
+            int numStrings = reader.ReadInt32();
+
+            reader.ReadInt32();
+
+            for (int i = 0; i < numStrings; i++)
+            {
+                int pointer = reader.ReadInt32();
+                long pos = InputStream.Position;
+
+                int key = pointer * 157135;
+
+                InputStream.Seek(baseOffset + pointer, SeekOrigin.Begin);
+
+                int length = 0;
+                while ((byte)(reader.ReadByte() ^ (key + (length / 2))) != '\0')
+                {
+                    length++;
+                }
+
+                byte[] array = new byte[length];
+
+                InputStream.Seek(baseOffset + pointer, SeekOrigin.Begin);
+                for (int j = 0; j < array.Length; j++)
+                {
+                    array[j] = (byte) (reader.ReadByte() ^ (key + (j / 2)));
+                }
+
+                StringTable.Add(Encoding.ASCII.GetString(array));
+
+                InputStream.Seek(pos, SeekOrigin.Begin);
             }
         }
     }

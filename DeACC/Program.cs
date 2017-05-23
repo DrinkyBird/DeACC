@@ -65,7 +65,13 @@ namespace Csnxs.DeACC
 
             Console.WriteLine("Detected format: " + format);
 
-            FileStream outputStream = new FileStream(Path.GetFullPath(options.OutputFile), FileMode.OpenOrCreate, FileAccess.Write);
+            string outputPath = Path.GetFullPath(options.OutputFile);
+            if (File.Exists(outputPath))
+            {
+                File.Delete(outputPath);
+            }
+
+            FileStream outputStream = new FileStream(outputPath, FileMode.OpenOrCreate, FileAccess.Write);
 
             AcsFile file = new AcsFile(stream, format);
             file.Disassemble(outputStream);
