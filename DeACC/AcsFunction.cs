@@ -8,10 +8,12 @@ namespace Csnxs.DeACC
 {
     class AcsFunction
     {
+        public string Name;
         public int NumberOfArguments { get; private set; }
         public int NumberOfVariables { get; private set; }
         public bool Returns { get; private set; }
         public int Pointer { get; private set; }
+        public int CodeSize;
 
         public AcsInstruction[] Code;
 

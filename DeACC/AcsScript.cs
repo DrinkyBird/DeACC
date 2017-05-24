@@ -33,6 +33,7 @@ namespace Csnxs.DeACC
     class AcsScript
     {
         public int Number { get; private set; }
+        public string Name { get; set; }
         public ScriptType Type { get; private set; }
         public int NumberOfArguments { get; private set; }
 
@@ -41,6 +42,7 @@ namespace Csnxs.DeACC
         public int Flags;
 
         public int Pointer { get; set; }
+        public int CodeSize;
 
         public AcsScript(int number, ScriptType type, int argc, int ptr)
         {

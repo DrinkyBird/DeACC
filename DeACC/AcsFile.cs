@@ -121,7 +121,7 @@ namespace Csnxs.DeACC
             WriteLine("// String Table:");
             for (int i = 0; i < StringTable.Count; i++)
             {
-                WriteLine("//   "+ i + " " + StringTable[i]);
+                WriteLine($"//  {i,4} " + StringTable[i]);
             }
 
             WriteLine();
@@ -219,11 +219,10 @@ namespace Csnxs.DeACC
             {
                 int index = pair.Key;
                 MapVariable var = pair.Value;
-
-                string name = (!String.IsNullOrEmpty(var.Name) ? var.Name : $"_m_{index:x4}_");
+                
                 string type = (var.IsString ? "str" : "int");
 
-                WriteLine($"{type} {name} = {var.Value};");
+                WriteLine($"{type} {var.Name} = {var.Value};");
             }
 
             WriteLine();
@@ -238,7 +237,7 @@ namespace Csnxs.DeACC
                 string returnType = (function.Returns ? "int" : "void");
                 string args;
 
-                if (function.NumberOfArguments > 1)
+                if (function.NumberOfArguments > 0)
                 {
                     args = "";
                     for (int i = 0; i < function.NumberOfArguments; i++)
@@ -257,6 +256,7 @@ namespace Csnxs.DeACC
                     args = "void";
                 }
 
+                WriteLine($"// Pointer: {function.Pointer}; Size = {function.CodeSize}");
                 WriteLine($"function {returnType} {name} ({args})");
                 WriteLine("{");
                 WriteCode(function.Code);
@@ -273,13 +273,13 @@ namespace Csnxs.DeACC
                 int number = pair.Key;
                 AcsScript script = pair.Value;
 
-                string args = "void";
+                string args = "(void)";
                 string type = "";
                 string flags = "";
 
                 if (script.NumberOfArguments > 0)
                 {
-                    args = "";
+                    args = "(";
                     for (int i = 0; i < script.NumberOfArguments; i++)
                     {
                         args += $"int _p_{ParameterCounter:x4}_";
@@ -290,6 +290,10 @@ namespace Csnxs.DeACC
                             args += ", ";
                         }
                     }
+                    args += ")";
+                } else if (script.NumberOfArguments == 0 && script.Type != ScriptType.Closed)
+                {
+                    args = "";
                 }
 
                 if (script.Type != ScriptType.Closed)
@@ -307,9 +311,13 @@ namespace Csnxs.DeACC
                     flags += "CLIENTSIDE ";
                 }
 
+                string argsSpace = (String.IsNullOrEmpty(args) ? "" : " ");
                 string typeSpace = (script.Type != ScriptType.Closed ? " " : "");
 
-                WriteLine($"Script {number} ({args}){typeSpace}{type} {flags}");
+                string name = (String.IsNullOrEmpty(script.Name) ? number.ToString() : $"\"{script.Name}\"");
+
+                WriteLine($"// Pointer: {script.Pointer}; Size = {script.CodeSize}");
+                WriteLine($"Script {name}{argsSpace}{args}{typeSpace}{type} {flags}");
                 
                 WriteLine("{");
                 WriteCode(script.Code);
@@ -320,9 +328,12 @@ namespace Csnxs.DeACC
 
         private void WriteCode(AcsInstruction[] code)
         {
-            foreach (var instruction in code)
+            for (int j = 0; j < code.Length; j++)
             {
-                string s = $"    > {instruction.Opcode.Name} ";
+                AcsInstruction instruction = code[j];
+                AcsInstruction next = (j == code.Length - 1 ? null : code[j + 1]);
+
+                string s = $"    /* {instruction.Offset,8} */ > {instruction.Opcode.Name} ";
 
                 for (int i = 0; i < instruction.Arguments.Length; i++)
                 {
@@ -332,6 +343,26 @@ namespace Csnxs.DeACC
                     {
                         s += ", ";
                     }
+                }
+
+                if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.PushByte)
+                    || AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.PushNumber))
+                {
+                    if (AcsInstruction.OpcodesAreEqual(next.Opcode, OpcodeEnum.TagString)
+                        || AcsInstruction.OpcodesAreEqual(next.Opcode, OpcodeEnum.PrintString))
+                    {
+                        int si = instruction.Arguments[0];
+                        s += $" // (String table index {si}): " + StringTable[si];
+                    }
+                }
+                else if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.PushMapVar))
+                {
+                    //s += " // " + MapVariables[instruction.Arguments[0]].Name;
+                }
+                else if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.Call)
+                    || AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.CallDiscard))
+                {
+                    s += " // " + FunctionList[instruction.Arguments[0]].Name;
                 }
 
                 WriteLine(s);

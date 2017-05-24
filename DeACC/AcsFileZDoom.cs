@@ -69,6 +69,7 @@ namespace Csnxs.DeACC
                 else if (name == "MIMP") ReadMIMP(size, ref reader);
                 else if (name == "MSTR") ReadMSTR(size, ref reader);
                 else if (name == "SPTR") ReadSPTR(size, ref reader);
+                else if (name == "SNAM") ReadSNAM(size, ref reader);
                 else if (name == "SFLG") ReadSFLG(size, ref reader);
                 else if (name == "STRL") StringTable.AddRange(ReadStringTable(ref reader, false, true));
                 else if (name == "STRE") StringTable.AddRange(ReadStringTable(ref reader, true, true));
@@ -79,9 +80,20 @@ namespace Csnxs.DeACC
                     //throw new NotImplementedException(Format + " chunk " + name + " (" + size + ")");
                 }
 
-                ReadCode(ref reader);
-
                 InputStream.Seek(pos + size, SeekOrigin.Begin);
+            }
+
+            ReadCode(ref reader);
+        }
+
+        private void ReadSNAM(int size, ref BinaryReader reader)
+        {
+            string[] names = ReadStringTable(ref reader, false, false);
+
+            for (int i = 0; i < names.Length; i++)
+            {
+                AcsScript s = Scripts[-(i + 1)];
+                s.Name = names[i];
             }
         }
 
@@ -137,7 +149,7 @@ namespace Csnxs.DeACC
                 if (MapVariables.ContainsKey(i))
                 {
                     MapVariable v = MapVariables[i];
-                    v.Name = names[i];
+                    // v.Name = names[i];
                     MapVariables[i] = v;
                 }
             }
@@ -148,7 +160,7 @@ namespace Csnxs.DeACC
                 if (MapArrays.ContainsKey(i))
                 {
                     MapArray v = MapArrays[i];
-                    v.Name = names[i];
+                    // v.Name = names[i];
                     MapArrays[i] = v;
                 }
             }
@@ -168,10 +180,6 @@ namespace Csnxs.DeACC
 
                 AcsFunction func = new AcsFunction(argc, varc, returns, address);
 
-                long pos = InputStream.Position;
-                InputStream.Seek(address, SeekOrigin.Begin);
-                InputStream.Seek(pos, SeekOrigin.Begin);
-
                 FunctionList.Add(func);
             }
         }
@@ -183,20 +191,25 @@ namespace Csnxs.DeACC
                 int num = script.Key;
                 AcsScript s = script.Value;
 
+                s.CodeSize = FindClosestPointer(s.Pointer) - s.Pointer;
+
                 InputStream.Seek(s.Pointer, SeekOrigin.Begin);
-                s.Code = AcsInstruction.ReadCode(this, ref reader, s.Pointer - FindClosestPointer(s.Pointer));
+                s.Code = AcsInstruction.ReadCode(this, ref reader, s.CodeSize);
             }
 
             foreach (var func in FunctionList)
             {
+                func.CodeSize = FindClosestPointer(func.Pointer) - func.Pointer;
+
                 InputStream.Seek(func.Pointer, SeekOrigin.Begin);
-                func.Code = AcsInstruction.ReadCode(this, ref reader, func.Pointer - FindClosestPointer(func.Pointer));
+                func.Code = AcsInstruction.ReadCode(this, ref reader, func.CodeSize);
             }
         }
 
         private int FindClosestPointer(int p)
         {
-            int r = -1;
+            const int def = Int32.MaxValue;
+            int r = def;
 
             foreach (var pair in Scripts)
             {
@@ -223,16 +236,29 @@ namespace Csnxs.DeACC
                 r = Math.Min(ptr, r);
             }
 
+            if (r == def && DirOffset > p)
+            {
+                r = DirOffset;
+            }
+
+            if (r == def)
+            {
+                r = (int) InputStream.Length - 1;
+            }
+
+            Console.WriteLine($"Closest to {p} is {r}");
+
             return r;
         }
 
         private void ReadFNAM(int size, ref BinaryReader reader)
         {
             string[] names = ReadStringTable(ref reader, false, false);
-            Console.WriteLine("Read names");
 
             for (int i = 0; i < names.Length; i++)
             {
+                AcsFunction f = FunctionList[i];
+                f.Name = names[i];
                 FunctionMap[names[i]] = FunctionList[i];
             }
         }
@@ -307,7 +333,7 @@ namespace Csnxs.DeACC
                 int value = reader.ReadInt32();
 
                 MapVariable v = new MapVariable();
-                v.Name = null;
+                v.Name = $"_m_{index:d4}_";
                 v.Value = value;
                 v.IsString = false;
 
@@ -338,8 +364,6 @@ namespace Csnxs.DeACC
                     int address = reader.ReadInt32();
 
                     AcsScript script = new AcsScript(number, type, argc, address);
-
-                    long pos = InputStream.Position;
                     Scripts[number] = script;
                 }
             }
@@ -355,8 +379,6 @@ namespace Csnxs.DeACC
                     int argc = reader.ReadInt32();
 
                     AcsScript script = new AcsScript(number, type, argc, address);
-
-                    long pos = InputStream.Position;
                     Scripts[number] = script;
                 }
             }

@@ -590,11 +590,13 @@ namespace Csnxs.DeACC
             new AcsOpcode {Name = "AssignMapArray",           NumberOfArguments = 1, FirstArgumentIsByte = true},
             new AcsOpcode {Name = "AddMapArray",              NumberOfArguments = 1, FirstArgumentIsByte = true},
             new AcsOpcode {Name = "SubMapArray",              NumberOfArguments = 1, FirstArgumentIsByte = true},
+            new AcsOpcode {Name = "MulMapArray",              NumberOfArguments = 1, FirstArgumentIsByte = true},
             new AcsOpcode {Name = "DivMapArray",              NumberOfArguments = 1, FirstArgumentIsByte = true},
             new AcsOpcode {Name = "ModMapArray",              NumberOfArguments = 1, FirstArgumentIsByte = true},
+            new AcsOpcode {Name = "IncMapArray",              NumberOfArguments = 1, FirstArgumentIsByte = true},
             new AcsOpcode {Name = "DecMapArray",              NumberOfArguments = 1, FirstArgumentIsByte = true},
-            new AcsOpcode {Name = "dup",                      NumberOfArguments = 0, FirstArgumentIsByte = false},
-            new AcsOpcode {Name = "swap",                     NumberOfArguments = 0, FirstArgumentIsByte = false},
+            new AcsOpcode {Name = "Dup",                      NumberOfArguments = 0, FirstArgumentIsByte = false},
+            new AcsOpcode {Name = "Swap",                     NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "WriteToIni",               NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "GetFromIni",               NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "Sin",                      NumberOfArguments = 0, FirstArgumentIsByte = false},
@@ -612,6 +614,8 @@ namespace Csnxs.DeACC
             new AcsOpcode {Name = "ModWorldArray",            NumberOfArguments = 1, FirstArgumentIsByte = true},
             new AcsOpcode {Name = "IncWorldArray",            NumberOfArguments = 1, FirstArgumentIsByte = true},
             new AcsOpcode {Name = "DecWorldArray",            NumberOfArguments = 1, FirstArgumentIsByte = true},
+            new AcsOpcode {Name = "PushGlobalArray",           NumberOfArguments = 1, FirstArgumentIsByte = true},
+            new AcsOpcode {Name = "AssignGlobalArray",           NumberOfArguments = 1, FirstArgumentIsByte = true},
             new AcsOpcode {Name = "AddGlobalArray",           NumberOfArguments = 1, FirstArgumentIsByte = true},
             new AcsOpcode {Name = "SubGlobalArray",           NumberOfArguments = 1, FirstArgumentIsByte = true},
             new AcsOpcode {Name = "MulGlobalArray",           NumberOfArguments = 1, FirstArgumentIsByte = true},
@@ -742,22 +746,29 @@ namespace Csnxs.DeACC
         public AcsOpcode Opcode { get; private set; }
         public int[] Arguments { get; private set; }
 
-        private AcsInstruction(AcsOpcode opcode, int[] args)
+        public int Offset { get; private set; }
+
+        private AcsInstruction(AcsOpcode opcode, int[] args, int offset)
         {
             this.Opcode = opcode;
             this.Arguments = args;
+            this.Offset = offset;
         }
 
         public static AcsInstruction[] ReadCode(AcsFile file, ref BinaryReader reader, int expectedSize)
         {
+            Console.WriteLine("Size = " + expectedSize);
             List<AcsInstruction> instructions = new List<AcsInstruction>();
 
             AcsOpcode opcode;
             long start = reader.BaseStream.Position;
 
-            while (!OpcodesAreEqual((opcode = ReadOpcode(ref reader, (file.Format == AcsFormat.Acs95))), Opcodes[(int)OpcodeEnum.Terminate]) && reader.BaseStream.Position - start < expectedSize - 1)
+            while (reader.BaseStream.Position - start < expectedSize)
             {
-                List<int> args = new List<int>(opcode.NumberOfArguments);
+                int offset = (int) reader.BaseStream.Position;
+                opcode = ReadOpcode(ref reader, (file.Format == AcsFormat.Acs95));
+
+                List <int> args = new List<int>(opcode.NumberOfArguments);
                 int i = 0;
 
                 if (opcode.FirstArgumentIsByte)
@@ -778,7 +789,7 @@ namespace Csnxs.DeACC
                     }
                 }
 
-                AcsInstruction instruction = new AcsInstruction(opcode, args.ToArray());
+                AcsInstruction instruction = new AcsInstruction(opcode, args.ToArray(), offset);
                 instructions.Add(instruction);
             }
 
@@ -804,13 +815,20 @@ namespace Csnxs.DeACC
                     n = one;
                 }
 
+                Console.WriteLine("Opcode # = " + n);
+                if (n > Opcodes.Length) return Opcodes[(int) OpcodeEnum.Nop];
                 return Opcodes[n];
             }
         }
 
-        private static bool OpcodesAreEqual(AcsOpcode one, AcsOpcode two)
+        public static bool OpcodesAreEqual(AcsOpcode one, AcsOpcode two)
         {
             return (one.Name == two.Name);
+        }
+
+        public static bool OpcodesAreEqual(AcsOpcode one, OpcodeEnum two)
+        {
+            return (one.Name.ToLower() == two.ToString().ToLower());
         }
     }
 }
