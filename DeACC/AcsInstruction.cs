@@ -454,6 +454,86 @@ namespace Csnxs.DeACC
         OrMapArray,
         OrWorldArray,
         OrGlobalArray,
+
+        LsScriptVar,
+        LsMapVar,
+        LsWorldVar,
+        LsGlobalVar,
+
+        LsMapArray,
+        LsWorldArray,
+        LsGlobalArray,
+       
+        RsScriptVar,
+        RsMapVar,
+        RsWorldVar,
+        RsGlobalVar,
+
+        RsMapArray,
+        RsWorldArray,
+        RsGlobalArray,
+        
+        GetPlayerInfo,
+
+        ChangeLevel,
+
+        SectorDamage,
+
+        ReplaceTextures,
+
+        NegateBinary,
+
+        GetActorPitch,
+        SetActorPitch,
+
+        PrintBind,
+
+        SetActorState,
+
+        ThingDamage2,
+
+        UseInventory,
+        UseActorInventory,
+
+        CheckActorCeilingTexture,
+
+        CheckActorFloorTexture,
+
+        GetActorLightLevel,
+
+        SetMugShotState,
+
+        ThingCountSector,
+        ThingCountNameSector,
+
+        CheckPlayerCamera,
+
+        MorphActor,
+        UnMorphActor,
+
+        ClassifyActor,
+
+        PrintBinary,
+        PrintHex,
+
+        CallFunc,
+
+        SaveString,
+
+        PrintMapChRange,
+        PrintWorldChRange,
+        PrintGlobalChRange,
+
+        StrCpyToMapChRange,
+        StrCpyToWorldChRange,
+        StrCpyToGlobalChRange,
+
+        PushFunction,
+        CallStack,
+
+        ScriptWaitNamed,
+
+        TranslationRange3
     }
 
     class AcsInstruction
