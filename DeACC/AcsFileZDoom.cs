@@ -281,6 +281,13 @@ namespace Csnxs.DeACC
                     int address = reader.ReadInt32();
 
                     AcsScript script = new AcsScript(number, type, argc);
+
+                    long pos = InputStream.Position;
+                    InputStream.Seek(address, SeekOrigin.Begin);
+
+                    script.Code = AcsInstruction.ReadCode(this, ref reader);
+
+                    InputStream.Seek(pos, SeekOrigin.Begin);
                     Scripts[number] = script;
                 }
             }
@@ -296,6 +303,13 @@ namespace Csnxs.DeACC
                     int argc = reader.ReadInt32();
 
                     AcsScript script = new AcsScript(number, type, argc);
+
+                    long pos = InputStream.Position;
+                    InputStream.Seek(address, SeekOrigin.Begin);
+
+                    script.Code = AcsInstruction.ReadCode(this, ref reader);
+
+                    InputStream.Seek(pos, SeekOrigin.Begin);
                     Scripts[number] = script;
                 }
             }

@@ -81,9 +81,15 @@ namespace Csnxs.DeACC
 
                 long pos = InputStream.Position;
 
+                AcsScript script = new AcsScript(number, type, argc);
+
                 InputStream.Seek(pointer, SeekOrigin.Begin);
-                
+
+                script.Code = AcsInstruction.ReadCode(this, ref reader);
+
                 InputStream.Seek(pos, SeekOrigin.Begin);
+
+                Scripts[number] = script;
             }
 
             int stringCount = reader.ReadInt32();
@@ -299,12 +305,31 @@ namespace Csnxs.DeACC
                 string typeSpace = (script.Type != ScriptType.Closed ? " " : "");
 
                 WriteLine($"Script {number} ({args}){typeSpace}{type} {flags}");
-
-                WriteLine();
+                
                 WriteLine("{");
-                WriteLine("");
+                WriteCode(script.Code);
                 WriteLine("}");
                 WriteLine();
+            }
+        }
+
+        private void WriteCode(AcsInstruction[] code)
+        {
+            foreach (var instruction in code)
+            {
+                string s = $"    > {instruction.Opcode.Name} ";
+
+                for (int i = 0; i < instruction.Arguments.Length; i++)
+                {
+                    s += instruction.Arguments[i];
+
+                    if (i < instruction.Arguments.Length - 1)
+                    {
+                        s += ", ";
+                    }
+                }
+
+                WriteLine(s);
             }
         }
 

@@ -22,6 +22,13 @@ namespace Csnxs.DeACC
             public string FileName { get; set; }
         }
 
+        [Verb("export-opcodes", HelpText = "Exports the opcodes to a file", Hidden = true)]
+        class ExportOpcodesOptions
+        {
+            [Option('o', "output-file", HelpText = "File to output the opcodes code to", Required = true)]
+            public string OutputFile { get; set; }
+        }
+
         #endregion
 
         static void Main(string[] args)
@@ -31,9 +38,10 @@ namespace Csnxs.DeACC
 
         private Program(string[] args)
         {
-            int ret = CommandLine.Parser.Default.ParseArguments<DisassembleOptions>(args)
+            int ret = CommandLine.Parser.Default.ParseArguments<DisassembleOptions, ExportOpcodesOptions>(args)
                 .MapResult(
-                    Disassemble,
+                    (DisassembleOptions opts) => Disassemble(opts),
+                    (ExportOpcodesOptions opts) => ExportOpcodes(opts),
                 errs => 1);
         }
 
@@ -78,6 +86,52 @@ namespace Csnxs.DeACC
 
             outputStream.Dispose();
             stream.Dispose();
+
+            return 0;
+        }
+
+        private int ExportOpcodes(ExportOpcodesOptions options)
+        {
+            string path = Path.GetFullPath(options.OutputFile);
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            FileStream outputStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write);
+
+            string output = "";
+
+            output = "AcsOpcode[] opcodes = new AcsOpcode[] {\n";
+
+            int longestName = 0;
+
+            foreach (var value in Enum.GetValues(typeof(OpcodeEnum)))
+            {
+                string n = value.ToString();
+                if (n.Length > longestName)
+                {
+                    longestName = n.Length;
+                }
+            }
+
+            foreach (var value in Enum.GetValues(typeof (OpcodeEnum)))
+            {
+                output += $"    new AcsOpcode {{Name = \"{value.ToString()}\",";
+
+                for (int i = 0; i < longestName - value.ToString().Length; i++)
+                {
+                    output += " ";
+                }
+
+                output += $" NumberOfArguments = 0, FirstArgumentIsByte = false}},\n";
+            }
+
+            output += "};";
+
+            byte[] array = Encoding.UTF8.GetBytes(output);
+            outputStream.Write(array, 0, array.Length);
+            outputStream.Dispose();
 
             return 0;
         }

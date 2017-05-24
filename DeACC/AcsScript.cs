@@ -36,6 +36,8 @@ namespace Csnxs.DeACC
         public ScriptType Type { get; private set; }
         public int NumberOfArguments { get; private set; }
 
+        public AcsInstruction[] Code;
+
         public int Flags;
 
         public AcsScript(int number, ScriptType type, int argc)
