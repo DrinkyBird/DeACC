@@ -11,12 +11,16 @@ namespace Csnxs.DeACC
         public int NumberOfArguments { get; private set; }
         public int NumberOfVariables { get; private set; }
         public bool Returns { get; private set; }
+        public int Pointer { get; private set; }
 
-        public AcsFunction(int argc, int varc, bool returns)
+        public AcsInstruction[] Code;
+
+        public AcsFunction(int argc, int varc, bool returns, int ptr)
         {
             NumberOfArguments = argc;
             NumberOfVariables = varc;
             Returns = returns;
+            Pointer = ptr;
         }
     }
 }

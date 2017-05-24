@@ -81,11 +81,16 @@ namespace Csnxs.DeACC
 
                 long pos = InputStream.Position;
 
-                AcsScript script = new AcsScript(number, type, argc);
+                AcsScript script = new AcsScript(number, type, argc, pointer);
 
                 InputStream.Seek(pointer, SeekOrigin.Begin);
 
-                script.Code = AcsInstruction.ReadCode(this, ref reader);
+                int len = 0;
+                while (reader.ReadInt32() != (int) OpcodeEnum.Terminate) len++;
+
+                InputStream.Seek(pointer, SeekOrigin.Begin);
+
+                script.Code = AcsInstruction.ReadCode(this, ref reader, len);
 
                 InputStream.Seek(pos, SeekOrigin.Begin);
 
@@ -254,7 +259,7 @@ namespace Csnxs.DeACC
 
                 WriteLine($"function {returnType} {name} ({args})");
                 WriteLine("{");
-                WriteLine();
+                WriteCode(function.Code);
                 WriteLine("}");
                 WriteLine();
             }

@@ -40,11 +40,14 @@ namespace Csnxs.DeACC
 
         public int Flags;
 
-        public AcsScript(int number, ScriptType type, int argc)
+        public int Pointer { get; set; }
+
+        public AcsScript(int number, ScriptType type, int argc, int ptr)
         {
             Number = number;
             Type = type;
             NumberOfArguments = argc;
+            Pointer = ptr;
         }
     }
 }

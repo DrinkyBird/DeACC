@@ -79,6 +79,8 @@ namespace Csnxs.DeACC
                     //throw new NotImplementedException(Format + " chunk " + name + " (" + size + ")");
                 }
 
+                ReadCode(ref reader);
+
                 InputStream.Seek(pos + size, SeekOrigin.Begin);
             }
         }
@@ -164,9 +166,64 @@ namespace Csnxs.DeACC
                 reader.ReadByte();
                 int address = reader.ReadInt32();
 
-                AcsFunction func = new AcsFunction(argc, varc, returns);
+                AcsFunction func = new AcsFunction(argc, varc, returns, address);
+
+                long pos = InputStream.Position;
+                InputStream.Seek(address, SeekOrigin.Begin);
+                InputStream.Seek(pos, SeekOrigin.Begin);
+
                 FunctionList.Add(func);
             }
+        }
+
+        private void ReadCode(ref BinaryReader reader)
+        {
+            foreach (var script in Scripts)
+            {
+                int num = script.Key;
+                AcsScript s = script.Value;
+
+                InputStream.Seek(s.Pointer, SeekOrigin.Begin);
+                s.Code = AcsInstruction.ReadCode(this, ref reader, s.Pointer - FindClosestPointer(s.Pointer));
+            }
+
+            foreach (var func in FunctionList)
+            {
+                InputStream.Seek(func.Pointer, SeekOrigin.Begin);
+                func.Code = AcsInstruction.ReadCode(this, ref reader, func.Pointer - FindClosestPointer(func.Pointer));
+            }
+        }
+
+        private int FindClosestPointer(int p)
+        {
+            int r = -1;
+
+            foreach (var pair in Scripts)
+            {
+                AcsScript script = pair.Value;
+                int ptr = script.Pointer;
+
+                if (p > ptr || p == ptr)
+                {
+                    continue;
+                }
+
+                r = Math.Min(ptr, r);
+            }
+
+            for (int i = 0; i < FunctionList.Count; i++)
+            {
+                int ptr = FunctionList[i].Pointer;
+
+                if (p > ptr || p == ptr)
+                {
+                    continue;
+                }
+
+                r = Math.Min(ptr, r);
+            }
+
+            return r;
         }
 
         private void ReadFNAM(int size, ref BinaryReader reader)
@@ -280,14 +337,9 @@ namespace Csnxs.DeACC
                     int argc = reader.ReadByte();
                     int address = reader.ReadInt32();
 
-                    AcsScript script = new AcsScript(number, type, argc);
+                    AcsScript script = new AcsScript(number, type, argc, address);
 
                     long pos = InputStream.Position;
-                    InputStream.Seek(address, SeekOrigin.Begin);
-
-                    script.Code = AcsInstruction.ReadCode(this, ref reader);
-
-                    InputStream.Seek(pos, SeekOrigin.Begin);
                     Scripts[number] = script;
                 }
             }
@@ -302,14 +354,9 @@ namespace Csnxs.DeACC
                     int address = reader.ReadInt32();
                     int argc = reader.ReadInt32();
 
-                    AcsScript script = new AcsScript(number, type, argc);
+                    AcsScript script = new AcsScript(number, type, argc, address);
 
                     long pos = InputStream.Position;
-                    InputStream.Seek(address, SeekOrigin.Begin);
-
-                    script.Code = AcsInstruction.ReadCode(this, ref reader);
-
-                    InputStream.Seek(pos, SeekOrigin.Begin);
                     Scripts[number] = script;
                 }
             }
