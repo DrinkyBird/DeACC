@@ -337,7 +337,27 @@ namespace Csnxs.DeACC
 
                 for (int i = 0; i < instruction.Arguments.Length; i++)
                 {
-                    s += instruction.Arguments[i];
+                    if (i == 0)
+                    {
+                        if (MapVariables.ContainsKey(instruction.Arguments[0])
+                            && AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.PushMapVar))
+                        {
+                            s += MapVariables[instruction.Arguments[0]].Name;
+                        }
+                        else if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.Call)
+                                 || AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.CallDiscard))
+                        {
+                            s += FunctionList[instruction.Arguments[0]].Name;
+                        }
+                        else
+                        {
+                            s += instruction.Arguments[i];
+                        }
+                    }
+                    else
+                    {
+                        s += instruction.Arguments[i];
+                    }
 
                     if (i < instruction.Arguments.Length - 1)
                     {
@@ -354,15 +374,6 @@ namespace Csnxs.DeACC
                         int si = instruction.Arguments[0];
                         s += $" // (String table index {si}): " + StringTable[si];
                     }
-                }
-                else if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.PushMapVar))
-                {
-                    //s += " // " + MapVariables[instruction.Arguments[0]].Name;
-                }
-                else if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.Call)
-                    || AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.CallDiscard))
-                {
-                    s += " // " + FunctionList[instruction.Arguments[0]].Name;
                 }
 
                 WriteLine(s);
