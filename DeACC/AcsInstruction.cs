@@ -365,7 +365,8 @@ namespace Csnxs.DeACC
         PushFunction,
         CallStack,
         ScriptWaitNamed,
-        TranslationRange3
+        TranslationRange3,
+        GotoStack
     }
 
     public struct AcsOpcode
@@ -383,16 +384,16 @@ namespace Csnxs.DeACC
             new AcsOpcode {Name = "Terminate",                NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "Suspend",                  NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "PushNumber",               NumberOfArguments = 1, FirstArgumentIsByte = false},
-            new AcsOpcode {Name = "LSpec1",                   NumberOfArguments = 1, FirstArgumentIsByte = false},
-            new AcsOpcode {Name = "LSpec2",                   NumberOfArguments = 1, FirstArgumentIsByte = false},
-            new AcsOpcode {Name = "LSpec3",                   NumberOfArguments = 1, FirstArgumentIsByte = false},
-            new AcsOpcode {Name = "LSpec4",                   NumberOfArguments = 1, FirstArgumentIsByte = false},
-            new AcsOpcode {Name = "LSpec5",                   NumberOfArguments = 1, FirstArgumentIsByte = false},
-            new AcsOpcode {Name = "LSpec1Direct",             NumberOfArguments = 2, FirstArgumentIsByte = false},
-            new AcsOpcode {Name = "LSpec2Direct",             NumberOfArguments = 3, FirstArgumentIsByte = false},
-            new AcsOpcode {Name = "LSpec3Direct",             NumberOfArguments = 4, FirstArgumentIsByte = false},
-            new AcsOpcode {Name = "LSpec4Direct",             NumberOfArguments = 5, FirstArgumentIsByte = false},
-            new AcsOpcode {Name = "LSpec5Direct",             NumberOfArguments = 6, FirstArgumentIsByte = false},
+            new AcsOpcode {Name = "LSpec1",                   NumberOfArguments = 1, FirstArgumentIsByte = true},
+            new AcsOpcode {Name = "LSpec2",                   NumberOfArguments = 1, FirstArgumentIsByte = true},
+            new AcsOpcode {Name = "LSpec3",                   NumberOfArguments = 1, FirstArgumentIsByte = true},
+            new AcsOpcode {Name = "LSpec4",                   NumberOfArguments = 1, FirstArgumentIsByte = true},
+            new AcsOpcode {Name = "LSpec5",                   NumberOfArguments = 1, FirstArgumentIsByte = true},
+            new AcsOpcode {Name = "LSpec1Direct",             NumberOfArguments = 2, FirstArgumentIsByte = true},
+            new AcsOpcode {Name = "LSpec2Direct",             NumberOfArguments = 3, FirstArgumentIsByte = true},
+            new AcsOpcode {Name = "LSpec3Direct",             NumberOfArguments = 4, FirstArgumentIsByte = true},
+            new AcsOpcode {Name = "LSpec4Direct",             NumberOfArguments = 5, FirstArgumentIsByte = true},
+            new AcsOpcode {Name = "LSpec5Direct",             NumberOfArguments = 6, FirstArgumentIsByte = true},
             new AcsOpcode {Name = "Add",                      NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "Subtract",                 NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "Multiply",                 NumberOfArguments = 0, FirstArgumentIsByte = false},
@@ -741,6 +742,7 @@ namespace Csnxs.DeACC
             new AcsOpcode {Name = "CallStack",                NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "ScriptWaitNamed",          NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "TranslationRange3",        NumberOfArguments = 0, FirstArgumentIsByte = false},
+            new AcsOpcode {Name = "GotoStack",                NumberOfArguments = 0, FirstArgumentIsByte = false},
         };
 
         public AcsOpcode Opcode { get; private set; }

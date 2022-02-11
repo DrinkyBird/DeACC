@@ -347,7 +347,14 @@ namespace Csnxs.DeACC
                         else if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.Call)
                                  || AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.CallDiscard))
                         {
-                            s += FunctionList[instruction.Arguments[0]].Name;
+                            if (instruction.Arguments[0] >= 0 && instruction.Arguments[0] < FunctionList.Count)
+                            {
+                                s += FunctionList[instruction.Arguments[0]].Name;
+                            }
+                            else
+                            {
+                                s += instruction.Arguments[0] + " // unknown function!";
+                            }
                         }
                         else
                         {
@@ -407,6 +414,8 @@ namespace Csnxs.DeACC
             {
                 array[c] = (byte) InputStream.ReadByte();
             }
+
+            InputStream.Seek(1, SeekOrigin.Current);
 
             string s = Encoding.ASCII.GetString(array);
             return s;
