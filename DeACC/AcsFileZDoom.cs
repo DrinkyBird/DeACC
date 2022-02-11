@@ -100,8 +100,9 @@ namespace Csnxs.DeACC
         private void ReadLOAD(int size, ref BinaryReader reader)
         {
             long start = InputStream.Position;
+            long end = start + size;
 
-            while (InputStream.Position - start < size - 1)
+            while (InputStream.Position < end)
             {
                 Libraries.Add(ReadString());
             }
@@ -326,10 +327,11 @@ namespace Csnxs.DeACC
         private void ReadMINI(int size, ref BinaryReader reader)
         {
             int numVars = (size / 4) - 1;
+            int baseIndex = reader.ReadInt32();
 
             for (int i = 0; i < numVars; i++)
             {
-                int index = reader.ReadInt32();
+                int index = baseIndex + i;
                 int value = reader.ReadInt32();
 
                 MapVariable v = new MapVariable();
