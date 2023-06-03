@@ -431,11 +431,10 @@ namespace Csnxs.DeACC
                     }
                 }
 
-                if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.PushByte)
-                    || AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.PushNumber))
+                if (CheckOpcode(code, j, OpcodeEnum.PushByte) || CheckOpcode(code, j, OpcodeEnum.PushNumber))
                 {
-                    if (AcsInstruction.OpcodesAreEqual(next.Opcode, OpcodeEnum.TagString)
-                        || AcsInstruction.OpcodesAreEqual(next.Opcode, OpcodeEnum.PrintString))
+                    if (CheckOpcode(code, j + 1, OpcodeEnum.TagString) || CheckOpcode(code, j + 1, OpcodeEnum.PrintString)
+                        || CheckOpcode(code, j + 2, OpcodeEnum.ThingSound))
                     {
                         int si = instruction.Arguments[0];
                         s += $" // (String table index {si}): " + StringTable[si];
@@ -444,6 +443,16 @@ namespace Csnxs.DeACC
 
                 WriteLine(s);
             }
+        }
+
+        private bool CheckOpcode(AcsInstruction[] code, int i, OpcodeEnum wanted)
+        {
+            if (i < 0 || i >= code.Length)
+            {
+                return false;
+            }
+
+            return AcsInstruction.OpcodesAreEqual(code[i].Opcode, wanted);
         }
 
         private void Write(string line = "")
