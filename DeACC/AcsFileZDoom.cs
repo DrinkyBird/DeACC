@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 
 namespace DeACC
@@ -23,6 +24,7 @@ namespace DeACC
         struct MapArray
         {
             public int[] Values;
+            public string Name;
             public bool IsString;
         }
 
@@ -272,6 +274,7 @@ namespace DeACC
 
                 MapArray a = new MapArray();
                 a.Values = new int[arraySize];
+                a.Name = $"_a_{num:x4}_";
                 a.IsString = false;
 
                 if (ArrayIsStringCache.ContainsKey(num))
