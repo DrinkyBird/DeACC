@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using CommandLine;
 
-namespace Csnxs.DeACC
+namespace DeACC
 {
     class Program
     {
@@ -84,7 +81,7 @@ namespace Csnxs.DeACC
 
             FileStream outputStream = new FileStream(outputPath, FileMode.OpenOrCreate, FileAccess.Write);
 
-            AcsFile file = new AcsFile(stream, format, alternateAcs95ScriptSizeMethod: options.UseAlternateAcs95SizeMethod);
+            global::DeACC.AcsFile file = new global::DeACC.AcsFile(stream, format, alternateAcs95ScriptSizeMethod: options.UseAlternateAcs95SizeMethod);
             file.Disassemble(outputStream);
 
             outputStream.Dispose();
