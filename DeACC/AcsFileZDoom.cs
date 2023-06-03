@@ -176,10 +176,10 @@ namespace Csnxs.DeACC
                 int argc = reader.ReadByte();
                 int varc = reader.ReadByte();
                 bool returns = reader.ReadByte() == 0x01;
-                reader.ReadByte();
+                byte importNum = reader.ReadByte();
                 int address = reader.ReadInt32();
-
-                AcsFunction func = new AcsFunction(argc, varc, returns, address);
+                
+                AcsFunction func = new AcsFunction(argc, varc, returns, importNum, address);
 
                 FunctionList.Add(func);
             }

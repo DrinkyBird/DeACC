@@ -234,6 +234,11 @@ namespace Csnxs.DeACC
                 string name = pair.Key;
                 AcsFunction function = pair.Value;
 
+                if (function.IsImported)
+                {
+                    continue;
+                }
+
                 string returnType = (function.Returns ? "int" : "void");
                 string args;
 
@@ -256,7 +261,7 @@ namespace Csnxs.DeACC
                     args = "void";
                 }
 
-                WriteLine($"// Pointer: {function.Pointer}; Size = {function.CodeSize}");
+                WriteLine($"// Pointer: {function.Pointer}; Size = {function.CodeSize}; ImportNum = {function.ImportNum}");
                 WriteLine($"function {returnType} {name} ({args})");
                 WriteLine("{");
                 WriteCode(function.Code);
