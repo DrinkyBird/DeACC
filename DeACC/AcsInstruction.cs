@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Csnxs.DeACC
 {
@@ -372,9 +369,19 @@ namespace Csnxs.DeACC
 
     public struct AcsOpcode
     {
+        private static int NextId = 0;
+
+        public int Id { get; private set; }
         public string Name { get; set; }
         public int NumberOfArguments;
         public Type[] ArgumentTypes;
+
+        public OpcodeEnum AsEnum() => (OpcodeEnum)Id;
+
+        public AcsOpcode()
+        {
+            Id = NextId++;
+        }
     }
 
     class AcsInstruction
@@ -745,7 +752,7 @@ namespace Csnxs.DeACC
             new AcsOpcode {Name = "TranslationRange3",        NumberOfArguments = 0},
             new AcsOpcode {Name = "GotoStack",                NumberOfArguments = 0},
         };
-
+        
         public AcsOpcode Opcode { get; private set; }
         public int[] Arguments { get; private set; }
 

@@ -84,10 +84,18 @@ namespace Csnxs.DeACC
                 AcsScript script = new AcsScript(number, type, argc, pointer);
 
                 InputStream.Seek(pointer, SeekOrigin.Begin);
+                
+                do
+                {
+                    AcsOpcode opcode = AcsInstruction.ReadOpcode(ref reader, true);
+                    InputStream.Position += 4 * opcode.NumberOfArguments;
+                    if (opcode.AsEnum() == OpcodeEnum.Terminate)
+                    {
+                        break;
+                    }
+                } while (true);
 
-                int len = 0;
-                while (reader.ReadInt32() != (int) OpcodeEnum.Terminate) len++;
-
+                int len = (int)InputStream.Position - pointer;
                 InputStream.Seek(pointer, SeekOrigin.Begin);
 
                 script.Code = AcsInstruction.ReadCode(this, ref reader, len);
