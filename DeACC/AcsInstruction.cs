@@ -351,6 +351,7 @@ namespace Csnxs.DeACC
         CheckPlayerCamera,
         MorphActor,
         UnMorphActor,
+        GetPlayerInput,
         ClassifyActor,
         PrintBinary,
         PrintHex,
