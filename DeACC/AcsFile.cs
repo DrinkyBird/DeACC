@@ -208,11 +208,10 @@ namespace DeACC
                 int index = pair.Key;
                 AcsFile.MapArray mapArray = pair.Value;
                 int[] array = mapArray.Values;
-
-                string name = (!String.IsNullOrEmpty(mapArray.Name) ? mapArray.Name : $"_a_{index:x4}_");
+                
                 string type = (mapArray.IsString ? "str" : "int");
 
-                Write($"{type} {name}[{array.Length}] = " + "{");
+                Write($"{type} {mapArray.Name}[{array.Length}] = " + "{");
                 for (int i = 0; i < array.Length; i++)
                 {
                     if (mapArray.IsString)
