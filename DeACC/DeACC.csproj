@@ -6,7 +6,9 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <PublishSingleFile>true</PublishSingleFile>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>partial</TrimMode>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>DeACC.Program</StartupObject>
