@@ -23,7 +23,6 @@ namespace DeACC
         struct MapArray
         {
             public int[] Values;
-            public string Name;
             public bool IsString;
         }
 
