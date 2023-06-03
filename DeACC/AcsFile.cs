@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.SqlServer.Server;
 
 namespace Csnxs.DeACC
 {
+    struct Acs95ScriptDef
+    {
+        public int Number, Pointer, Args;
+    }
+
     partial class AcsFile
     {
         private Stream InputStream;
@@ -25,7 +27,7 @@ namespace Csnxs.DeACC
 
         private int ParameterCounter = 0;
 
-        public AcsFile(Stream stream, AcsFormat format)
+        public AcsFile(Stream stream, AcsFormat format, bool alternateAcs95ScriptSizeMethod = false)
         {
             InputStream = stream;
             Format = format;
@@ -54,7 +56,7 @@ namespace Csnxs.DeACC
 
             if (format == AcsFormat.Acs95)
             {
-                ReadAcs95(ref reader);
+                ReadAcs95(ref reader, alternateAcs95ScriptSizeMethod);
             }
             else
             {
@@ -64,8 +66,11 @@ namespace Csnxs.DeACC
             reader.Dispose();
         }
 
-        private void ReadAcs95(ref BinaryReader reader)
+        private void ReadAcs95(ref BinaryReader reader, bool alternateScriptSizeMethod)
         {
+            List<Acs95ScriptDef> scripts = new();
+            int firstStringAddress = (int)InputStream.Position;
+
             int numPointers = reader.ReadInt32();
             for (int i = 0; i < numPointers; i++)
             {
@@ -73,36 +78,12 @@ namespace Csnxs.DeACC
                 int pointer = reader.ReadInt32();
                 int argc = reader.ReadInt32();
 
-                int id = number % 1000;
-                int typeNum = number / 1000;
-                ScriptType type = (ScriptType) typeNum;
-
-                Console.WriteLine("Script " + id + " is of type " + type);
-
-                long pos = InputStream.Position;
-
-                AcsScript script = new AcsScript(number, type, argc, pointer);
-
-                InputStream.Seek(pointer, SeekOrigin.Begin);
-                
-                do
+                scripts.Add(new Acs95ScriptDef
                 {
-                    AcsOpcode opcode = AcsInstruction.ReadOpcode(ref reader, true);
-                    InputStream.Position += 4 * opcode.NumberOfArguments;
-                    if (opcode.AsEnum() == OpcodeEnum.Terminate)
-                    {
-                        break;
-                    }
-                } while (true);
-
-                int len = (int)InputStream.Position - pointer;
-                InputStream.Seek(pointer, SeekOrigin.Begin);
-
-                script.Code = AcsInstruction.ReadCode(this, ref reader, len);
-
-                InputStream.Seek(pos, SeekOrigin.Begin);
-
-                Scripts[number] = script;
+                    Number = number,
+                    Pointer = pointer,
+                    Args = argc
+                });
             }
 
             int stringCount = reader.ReadInt32();
@@ -115,6 +96,62 @@ namespace Csnxs.DeACC
                 StringTable.Add(ReadString());
 
                 InputStream.Seek(pos, SeekOrigin.Begin);
+
+                if (i == 0)
+                {
+                    firstStringAddress = pointer;
+                }
+            }
+
+            for (int i = 0; i < scripts.Count; i++)
+            {
+                var def = scripts[i];
+
+                int id = def.Number % 1000;
+                int typeNum = def.Number / 1000;
+                ScriptType type = (ScriptType)typeNum;
+
+                Console.WriteLine("Script " + id + " is of type " + type);
+                long pos = InputStream.Position;
+
+                AcsScript script = new AcsScript(def.Number, type, def.Args, def.Pointer);
+
+                int len;
+
+                if (alternateScriptSizeMethod)
+                {
+                    if (i < scripts.Count - 1)
+                    {
+                        len = scripts[i + 1].Pointer - def.Pointer;
+                    }
+                    else
+                    {
+                        len = firstStringAddress - def.Pointer;
+                    }
+                }
+                else
+                {
+                    InputStream.Seek(def.Pointer, SeekOrigin.Begin);
+
+                    do
+                    {
+                        AcsOpcode opcode = AcsInstruction.ReadOpcode(ref reader, true);
+                        InputStream.Position += 4 * opcode.NumberOfArguments;
+                        if (opcode.AsEnum() == OpcodeEnum.Terminate)
+                        {
+                            break;
+                        }
+                    } while (true);
+
+                    len = (int)InputStream.Position - def.Pointer;
+                }
+
+                InputStream.Seek(def.Pointer, SeekOrigin.Begin);
+                script.Code = AcsInstruction.ReadCode(this, ref reader, len);
+
+                InputStream.Seek(pos, SeekOrigin.Begin);
+
+                Scripts[def.Number] = script;
             }
         }
 

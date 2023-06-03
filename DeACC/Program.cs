@@ -20,6 +20,9 @@ namespace Csnxs.DeACC
 
             [Value(0, MetaName = "file", HelpText = "Compiled ACS object file", Required = true)]
             public string FileName { get; set; }
+
+            [Option("alternate-acs-95-size-method", HelpText = "Uses an alternate method to determine the size of ACS95 scripts. This calculates the size of Hexen's scripts correctly, but might not work reliably.")]
+            public bool UseAlternateAcs95SizeMethod { get; set; }
         }
 
         [Verb("export-opcodes", HelpText = "Exports the opcodes to a file", Hidden = true)]
@@ -81,7 +84,7 @@ namespace Csnxs.DeACC
 
             FileStream outputStream = new FileStream(outputPath, FileMode.OpenOrCreate, FileAccess.Write);
 
-            AcsFile file = new AcsFile(stream, format);
+            AcsFile file = new AcsFile(stream, format, alternateAcs95ScriptSizeMethod: options.UseAlternateAcs95SizeMethod);
             file.Disassemble(outputStream);
 
             outputStream.Dispose();
