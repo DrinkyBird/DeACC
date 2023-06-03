@@ -19,14 +19,6 @@
     <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.1.1-beta" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="CommandLine, Version=2.9.1.0, Culture=neutral, PublicKeyToken=5a870481e358d379">
-      <HintPath>..\packages\CommandLineParser.2.9.1\lib\netstandard2.0\CommandLine.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
   </ItemGroup>
 </Project>
