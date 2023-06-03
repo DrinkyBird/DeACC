@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 
-namespace Csnxs.DeACC
+namespace DeACC
 {
     struct Acs95ScriptDef
     {
@@ -193,10 +193,10 @@ namespace Csnxs.DeACC
             if (ImportedMapArrays.Count > 0)
             {
                 WriteLine($"/* Imported map arrays ({ImportedMapArrays.Count}:");
-                foreach (KeyValuePair<int, ImportedArray> pair in ImportedMapArrays)
+                foreach (KeyValuePair<int, AcsFile.ImportedArray> pair in ImportedMapArrays)
                 {
                     int index = pair.Key;
-                    ImportedArray array = pair.Value;
+                    AcsFile.ImportedArray array = pair.Value;
 
                     WriteLine($"/* imported - index {index:x4} */ int {array.Name}[{array.Size}];");
                 }
@@ -206,7 +206,7 @@ namespace Csnxs.DeACC
             foreach (var pair in MapArrays)
             {
                 int index = pair.Key;
-                MapArray mapArray = pair.Value;
+                AcsFile.MapArray mapArray = pair.Value;
                 int[] array = mapArray.Values;
 
                 string name = (!String.IsNullOrEmpty(mapArray.Name) ? mapArray.Name : $"_a_{index:x4}_");
@@ -263,7 +263,7 @@ namespace Csnxs.DeACC
             foreach (var pair in MapVariables)
             {
                 int index = pair.Key;
-                MapVariable var = pair.Value;
+                AcsFile.MapVariable var = pair.Value;
                 
                 string type = (var.IsString ? "str" : "int");
 

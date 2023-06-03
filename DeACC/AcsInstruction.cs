@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Csnxs.DeACC
+namespace DeACC
 {
     public enum OpcodeEnum
     {
@@ -765,7 +765,7 @@ namespace Csnxs.DeACC
             this.Offset = offset;
         }
 
-        public static AcsInstruction[] ReadCode(AcsFile file, ref BinaryReader reader, int expectedSize)
+        public static AcsInstruction[] ReadCode(global::DeACC.AcsFile file, ref BinaryReader reader, int expectedSize)
         {
             Console.WriteLine("Size = " + expectedSize);
             List<AcsInstruction> instructions = new List<AcsInstruction>();

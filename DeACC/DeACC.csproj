@@ -2,14 +2,14 @@
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
 		<OutputType>Exe</OutputType>
-		<RootNamespace>Csnxs.DeACC</RootNamespace>
+		<RootNamespace>DeACC</RootNamespace>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<PublishSingleFile>true</PublishSingleFile>
 		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 		<TrimMode>partial</TrimMode>
 	</PropertyGroup>
 	<PropertyGroup>
-		<StartupObject>Csnxs.DeACC.Program</StartupObject>
+		<StartupObject>DeACC.Program</StartupObject>
 		<AssemblyTitle>DeACC</AssemblyTitle>
 		<Description>A .NET based ACS disassembler</Description>
 		<Company>Sean Baggaley</Company>
