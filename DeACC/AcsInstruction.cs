@@ -373,8 +373,9 @@ namespace Csnxs.DeACC
     {
         public string Name { get; set; }
         public int NumberOfArguments;
-        public bool FirstArgumentIsByte;
-        public bool AllArgsAreByte;
+        [Obsolete("use ArgumentTypes")] public bool FirstArgumentIsByte;
+        [Obsolete("use ArgumentTypes")] public bool AllArgsAreByte;
+        public Type[] ArgumentTypes;
     }
 
     class AcsInstruction
@@ -731,7 +732,7 @@ namespace Csnxs.DeACC
             new AcsOpcode {Name = "ClassifyActor",            NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "PrintBinary",              NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "PrintHex",                 NumberOfArguments = 0, FirstArgumentIsByte = false},
-            new AcsOpcode {Name = "CallFunc",                 NumberOfArguments = 1, FirstArgumentIsByte = false},
+            new AcsOpcode {Name = "CallFunc",                 NumberOfArguments = 2, ArgumentTypes = new []{ typeof(byte), typeof(short) }},
             new AcsOpcode {Name = "SaveString",               NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "PrintMapChRange",          NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "PrintWorldChRange",        NumberOfArguments = 0, FirstArgumentIsByte = false},
@@ -774,7 +775,7 @@ namespace Csnxs.DeACC
                 List <int> args = new List<int>(opcode.NumberOfArguments);
                 int i = 0;
 
-                if (opcode.FirstArgumentIsByte)
+                if (opcode.ArgumentTypes == null && opcode.FirstArgumentIsByte && file.Format == AcsFormat.ZDoomLower)
                 {
                     args.Add(reader.ReadByte());
                     i++;
@@ -782,9 +783,24 @@ namespace Csnxs.DeACC
 
                 for (; i < opcode.NumberOfArguments; i++)
                 {
-                    if (opcode.AllArgsAreByte)
+                    if (file.Format == AcsFormat.ZDoomLower)
                     {
-                        args.Add(reader.ReadByte());
+                        if (opcode.ArgumentTypes != null)
+                        {
+                            var type = opcode.ArgumentTypes[i];
+                            args.Add(ReadByType(reader, type));
+                        }
+                        else
+                        {
+                            if (opcode.AllArgsAreByte)
+                            {
+                                args.Add(reader.ReadByte());
+                            }
+                            else
+                            {
+                                args.Add(reader.ReadInt32());
+                            }
+                        }
                     }
                     else
                     {
@@ -797,6 +813,26 @@ namespace Csnxs.DeACC
             }
 
             return instructions.ToArray();
+        }
+
+        private static int ReadByType(BinaryReader reader, Type type)
+        {
+            if (type == typeof(byte))
+            {
+                return reader.ReadByte();
+            }
+            else if (type == typeof(short))
+            {
+                return reader.ReadInt16();
+            }
+            else if (type == typeof(int))
+            {
+                return reader.ReadInt32();
+            }
+            else
+            {
+                throw new NotImplementedException(type.Name);
+            }
         }
 
         public static AcsOpcode ReadOpcode(ref BinaryReader reader, bool longFormat)
