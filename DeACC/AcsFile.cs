@@ -411,14 +411,11 @@ namespace Csnxs.DeACC
                             s += instruction.Arguments[i];
                         }
                     }
-                    else if (i == 1)
+                    else if (i == 1 && CheckOpcode(code, j, OpcodeEnum.CallFunc))
                     {
-                        if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.CallFunc))
-                        {
-                            AcsBuiltIn builtIn = (AcsBuiltIn)instruction.Arguments[i];
+                        AcsBuiltIn builtIn = (AcsBuiltIn)instruction.Arguments[i];
 
-                            s += Enum.GetName(builtIn);
-                        }
+                        s += Enum.GetName(builtIn);
                     }
                     else
                     {
