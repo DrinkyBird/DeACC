@@ -361,6 +361,15 @@ namespace Csnxs.DeACC
                             s += instruction.Arguments[i];
                         }
                     }
+                    else if (i == 1)
+                    {
+                        if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.CallFunc))
+                        {
+                            AcsBuiltIn builtIn = (AcsBuiltIn)instruction.Arguments[i];
+
+                            s += Enum.GetName(builtIn);
+                        }
+                    }
                     else
                     {
                         s += instruction.Arguments[i];
