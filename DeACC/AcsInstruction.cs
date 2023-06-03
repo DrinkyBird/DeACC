@@ -727,6 +727,7 @@ namespace Csnxs.DeACC
             new AcsOpcode {Name = "CheckPlayerCamera",        NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "MorphActor",               NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "UnMorphActor",             NumberOfArguments = 0, FirstArgumentIsByte = false},
+            new AcsOpcode {Name = "GetPlayerInput",           NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "ClassifyActor",            NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "PrintBinary",              NumberOfArguments = 0, FirstArgumentIsByte = false},
             new AcsOpcode {Name = "PrintHex",                 NumberOfArguments = 0, FirstArgumentIsByte = false},
