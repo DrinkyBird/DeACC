@@ -53,7 +53,7 @@
         [TestMethod]
         public void TestDecodeMultiByteOpcodeWithSingleByteArgument()
         {
-            byte[] data = { 240, 114, 123 };
+            byte[] data = { 240, 119, 123 };
 
             AcsInstruction instruction = DecodeInstruction(data);
             Assert.IsTrue(
@@ -80,7 +80,7 @@
         [TestMethod]
         public void TestDecodeMultiByteOpcodeWithMixedTypeArguments()
         {
-            byte[] data = { 240, 106, 123, 0xF0, 0x0F };
+            byte[] data = { 240, 111, 123, 0xF0, 0x0F };
 
             AcsInstruction instruction = DecodeInstruction(data);
             Assert.IsTrue(
