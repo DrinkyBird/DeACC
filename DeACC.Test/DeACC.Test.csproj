@@ -24,4 +24,16 @@
     <ProjectReference Include="..\DeACC\DeACC.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\hexen_map03.o">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\lib1.acs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\lib1.o">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
