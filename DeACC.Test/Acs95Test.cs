@@ -56,7 +56,7 @@ namespace DeACC.Test
             Assert.IsTrue(
                 AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.LSpec4Direct)
                 && instruction.Arguments.Length == 5
-                && instruction.Arguments[0] == 94
+                && instruction.Arguments[0] == 0
                 && instruction.Arguments[1] == 14
                 && instruction.Arguments[2] == 8
                 && instruction.Arguments[3] == 0
