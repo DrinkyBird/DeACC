@@ -194,7 +194,7 @@ namespace DeACC
                 s.CodeSize = FindClosestPointer(s.Pointer) - s.Pointer;
 
                 InputStream.Seek(s.Pointer, SeekOrigin.Begin);
-                s.Code = AcsInstruction.ReadCode(this, ref reader, s.CodeSize);
+                s.Code = AcsInstruction.ReadCode(Format, reader, s.CodeSize);
             }
 
             foreach (var func in FunctionList)
@@ -202,7 +202,7 @@ namespace DeACC
                 func.CodeSize = FindClosestPointer(func.Pointer) - func.Pointer;
 
                 InputStream.Seek(func.Pointer, SeekOrigin.Begin);
-                func.Code = AcsInstruction.ReadCode(this, ref reader, func.CodeSize);
+                func.Code = AcsInstruction.ReadCode(Format, reader, func.CodeSize);
             }
         }
 

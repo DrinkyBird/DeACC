@@ -384,7 +384,7 @@ namespace DeACC
         }
     }
 
-    class AcsInstruction
+    public class AcsInstruction
     {
         public static readonly AcsOpcode[] Opcodes = {
             new AcsOpcode {Name = "Nop",                      NumberOfArguments = 0},
@@ -765,7 +765,7 @@ namespace DeACC
             this.Offset = offset;
         }
 
-        public static AcsInstruction[] ReadCode(global::DeACC.AcsFile file, ref BinaryReader reader, int expectedSize)
+        public static AcsInstruction[] ReadCode(AcsFormat format, BinaryReader reader, int expectedSize)
         {
             Console.WriteLine("Size = " + expectedSize);
             List<AcsInstruction> instructions = new List<AcsInstruction>();
@@ -776,13 +776,13 @@ namespace DeACC
             while (reader.BaseStream.Position - start < expectedSize)
             {
                 int offset = (int) reader.BaseStream.Position;
-                opcode = ReadOpcode(ref reader, (file.Format == AcsFormat.Acs95));
+                opcode = ReadOpcode(ref reader, (format == AcsFormat.Acs95));
 
                 List <int> args = new List<int>(opcode.NumberOfArguments);
 
                 for (int i = 0; i < opcode.NumberOfArguments; i++)
                 {
-                    if (file.Format == AcsFormat.ZDoomLower && opcode.ArgumentTypes != null)
+                    if (format == AcsFormat.ZDoomLower && opcode.ArgumentTypes != null)
                     {
                         var type = opcode.ArgumentTypes[i];
                         args.Add(ReadByType(reader, type));
