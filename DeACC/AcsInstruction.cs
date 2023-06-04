@@ -772,7 +772,6 @@ namespace DeACC
 
         public static AcsInstruction[] ReadCode(AcsFormat format, BinaryReader reader, int expectedSize)
         {
-            Console.WriteLine("Size = " + expectedSize);
             List<AcsInstruction> instructions = new List<AcsInstruction>();
 
             AcsOpcode opcode;
@@ -843,8 +842,7 @@ namespace DeACC
                 {
                     n = one;
                 }
-
-                Console.WriteLine("Opcode # = " + n);
+                
                 if (n > Opcodes.Length) return Opcodes[(int) OpcodeEnum.Nop];
                 return Opcodes[n];
             }
