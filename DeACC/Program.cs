@@ -102,32 +102,56 @@ namespace DeACC
 
             string output = "";
 
-            output = "AcsOpcode[] opcodes = new AcsOpcode[] {\n";
-
             int longestName = 0;
 
-            foreach (var value in Enum.GetValues(typeof(OpcodeEnum)))
+            foreach (var value in AcsInstruction.Opcodes)
             {
-                string n = value.ToString();
+                string n = value.Name;
                 if (n.Length > longestName)
                 {
                     longestName = n.Length;
                 }
             }
 
-            foreach (var value in Enum.GetValues(typeof (OpcodeEnum)))
+            foreach (var value in AcsInstruction.Opcodes)
             {
-                output += $"    new AcsOpcode {{Name = \"{value.ToString()}\",";
+                output += $"Num = " + value.Id;
 
-                for (int i = 0; i < longestName - value.ToString().Length; i++)
+                for (int i = 0; i < 3 - value.Id.ToString().Length; i++)
                 {
                     output += " ";
                 }
 
-                output += $" NumberOfArguments = 0, FirstArgumentIsByte = false}},\n";
-            }
+                output += $"; Id = " + Enum.GetName(value.AsEnum());
 
-            output += "};";
+                for (int i = 0; i < longestName - value.Name.Length; i++)
+                {
+                    output += " ";
+                }
+
+                output += "; Name = " + value.Name;
+                for (int i = 0; i < longestName - value.Name.Length; i++)
+                {
+                    output += " ";
+                }
+
+                output += "; Arguments = " + value.NumberOfArguments;
+                if (value.NumberOfArguments > 0)
+                {
+                    output += " (";
+                    for (int i = 0; i < value.NumberOfArguments; i++)
+                    {
+                        output += value.ArgumentTypes[i].Name;
+                        if (i < value.NumberOfArguments - 1)
+                        {
+                            output += ", ";
+                        }
+                    }
+                    output += ")";
+                }
+
+                output += "\n";
+            }
 
             byte[] array = Encoding.UTF8.GetBytes(output);
             outputStream.Write(array, 0, array.Length);
