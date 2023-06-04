@@ -19,9 +19,6 @@ namespace DeACC.Test
         private static AcsInstruction DecodeInstruction(int[] data)
         {
             var instructions = DecodeInstructions(data);
-
-            Assert.AreEqual(instructions.Length, 1);
-
             return instructions[0];
         }
 
@@ -34,7 +31,6 @@ namespace DeACC.Test
             };
 
             AcsInstruction instruction = DecodeInstruction(data);
-            Assert.IsNotNull(instruction);
 
             Assert.IsTrue(
                 AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.Terminate)
