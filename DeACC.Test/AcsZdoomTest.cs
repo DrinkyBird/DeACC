@@ -62,5 +62,33 @@
                 && instruction.Arguments[0] == 123
             );
         }
+
+        [TestMethod]
+        public void TestDecodeSingleByteOpcodeWithMixedTypeArguments()
+        {
+            byte[] data = { 9, 123, 0x01, 0x23, 0x45, 0x67 };
+
+            AcsInstruction instruction = DecodeInstruction(data);
+            Assert.IsTrue(
+                AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.LSpec1Direct)
+                && instruction.Arguments.Length == 2
+                && instruction.Arguments[0] == 123
+                && instruction.Arguments[1] == 0x67452301 // endianness
+            );
+        }
+
+        [TestMethod]
+        public void TestDecodeMultiByteOpcodeWithMixedTypeArguments()
+        {
+            byte[] data = { 240, 106, 123, 0xF0, 0x0F };
+
+            AcsInstruction instruction = DecodeInstruction(data);
+            Assert.IsTrue(
+                AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.CallFunc)
+                && instruction.Arguments.Length == 2
+                && instruction.Arguments[0] == 123
+                && instruction.Arguments[1] == 0x0FF0 // endianness
+            );
+        }
     }
 }
