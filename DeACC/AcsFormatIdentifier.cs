@@ -2,7 +2,7 @@
 
 namespace DeACC
 {
-    enum AcsFormat
+    public enum AcsFormat
     {
         NotAcs,
         Acs95,          // ACS\0
@@ -10,7 +10,7 @@ namespace DeACC
         ZDoomLower      // ACSe
     }
 
-    class AcsFormatIdentifier
+    public class AcsFormatIdentifier
     {
         // Disallow construction of this class.
         private AcsFormatIdentifier() {}

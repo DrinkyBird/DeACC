@@ -1,6 +1,6 @@
 ﻿namespace DeACC
 {
-    enum ScriptType
+    public enum ScriptType
     {
         Closed,
         Open,
@@ -18,13 +18,13 @@
         Return
     }
 
-    enum ScriptFlags
+    public enum ScriptFlags
     {
         Net = 1 << 0,
         Clientside = 1 << 1
     }
 
-    class AcsScript
+    public class AcsScript
     {
         public int Number { get; private set; }
         public string Name { get; set; }

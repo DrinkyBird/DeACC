@@ -11,7 +11,7 @@ namespace DeACC
         public int Number, Pointer, Args;
     }
 
-    partial class AcsFile
+    public partial class AcsFile
     {
         private Stream InputStream;
         private Stream OutputStream;
@@ -147,7 +147,7 @@ namespace DeACC
                 }
 
                 InputStream.Seek(def.Pointer, SeekOrigin.Begin);
-                script.Code = AcsInstruction.ReadCode(this, ref reader, len);
+                script.Code = AcsInstruction.ReadCode(Format, reader, len);
 
                 InputStream.Seek(pos, SeekOrigin.Begin);
 
