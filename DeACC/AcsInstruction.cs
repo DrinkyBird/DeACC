@@ -762,11 +762,15 @@ namespace DeACC
         public int[] Arguments { get; private set; }
 
         public int Offset { get; private set; }
+        
+        // For CaseGotoSorted
+        public Dictionary<int, int> JumpTable { get; private set; }
 
-        private AcsInstruction(AcsOpcode opcode, int[] args, int offset)
+        private AcsInstruction(AcsOpcode opcode, int[] args, Dictionary<int, int> jumpTable, int offset)
         {
             this.Opcode = opcode;
             this.Arguments = args;
+            this.JumpTable = jumpTable;
             this.Offset = offset;
         }
 
@@ -783,25 +787,54 @@ namespace DeACC
                 opcode = ReadOpcode(ref reader, (format == AcsFormat.Acs95));
 
                 List <int> args = new List<int>(opcode.NumberOfArguments);
+                Dictionary<int, int> jumpTable = null;
 
-                for (int i = 0; i < opcode.NumberOfArguments; i++)
+                if (opcode.Id == (int)OpcodeEnum.CaseGotoSorted)
                 {
-                    if (format == AcsFormat.ZDoomLower && opcode.ArgumentTypes != null)
+                    jumpTable = ReadCaseGotoSortedJumpTable(reader);
+                }
+                else
+                {
+                    for (int i = 0; i < opcode.NumberOfArguments; i++)
                     {
-                        var type = opcode.ArgumentTypes[i];
-                        args.Add(ReadByType(reader, type));
-                    }
-                    else
-                    {
-                        args.Add(reader.ReadInt32());
+                        if (format == AcsFormat.ZDoomLower && opcode.ArgumentTypes != null)
+                        {
+                            var type = opcode.ArgumentTypes[i];
+                            args.Add(ReadByType(reader, type));
+                        }
+                        else
+                        {
+                            args.Add(reader.ReadInt32());
+                        }
                     }
                 }
 
-                AcsInstruction instruction = new AcsInstruction(opcode, args.ToArray(), offset);
+                AcsInstruction instruction = new AcsInstruction(opcode, args.ToArray(), jumpTable, offset);
                 instructions.Add(instruction);
             }
 
             return instructions.ToArray();
+        }
+
+        private static Dictionary<int, int> ReadCaseGotoSortedJumpTable(BinaryReader reader)
+        {
+            Dictionary<int, int> result = new();
+            
+            while (reader.BaseStream.Position % 4 != 0)
+            {
+                reader.BaseStream.Position++;
+            }
+
+            int count = reader.ReadInt32();
+            for (int i = 0; i < count; i++)
+            {
+                int value = reader.ReadInt32();
+                int address = reader.ReadInt32();
+
+                result[value] = address;
+            }
+
+            return result;
         }
 
         private static int ReadByType(BinaryReader reader, Type type)

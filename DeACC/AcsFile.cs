@@ -427,6 +427,24 @@ namespace DeACC
                     }
                 }
 
+                if (instruction.JumpTable != null)
+                {
+                    s += "{ ";
+                    
+                    int n = 0;
+                    foreach (var entry in instruction.JumpTable)
+                    {
+                        s += $"{entry.Key} -> {entry.Value}";
+                        if (n < instruction.JumpTable.Count - 1)
+                        {
+                            s += ", ";
+                        }
+                        n++;
+                    }
+
+                    s += " }";
+                }
+
                 if (CheckOpcode(code, j, OpcodeEnum.PushByte) || CheckOpcode(code, j, OpcodeEnum.PushNumber))
                 {
                     if (CheckOpcode(code, j + 1, OpcodeEnum.TagString) || CheckOpcode(code, j + 1, OpcodeEnum.PrintString)
