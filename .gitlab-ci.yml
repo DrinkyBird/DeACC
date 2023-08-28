@@ -1,0 +1,30 @@
+image: mcr.microsoft.com/dotnet/sdk:latest
+
+variables:
+  OBJECTS_DIRECTORY: 'obj'
+  NUGET_PACKAGES_DIRECTORY: '.nuget'
+  SOURCE_CODE_PATH: '*/*/'
+
+cache:
+  key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
+  paths:
+    - '$SOURCE_CODE_PATH$OBJECTS_DIRECTORY/project.assets.json'
+    - '$SOURCE_CODE_PATH$OBJECTS_DIRECTORY/*.csproj.nuget.*'
+    - '$NUGET_PACKAGES_DIRECTORY'
+  policy: pull-push
+
+before_script:
+  - 'dotnet restore --packages $NUGET_PACKAGES_DIRECTORY'
+
+build:
+  stage: build
+  script:
+    - 'dotnet build --no-restore'
+
+tests:
+  stage: test
+  script:
+    - 'dotnet test --no-restore --logger:"junit;LogFilePath=$CI_PROJECT_DIR/test-result.xml"'
+  artifacts:
+    reports:
+      junit: test-result.xml
