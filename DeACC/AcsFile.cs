@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -20,8 +21,8 @@ namespace DeACC
         private int DirOffset;
         private bool HexenFaked = false;
 
-        public Dictionary<int, AcsScript> Scripts = new Dictionary<int, AcsScript>();
-        public List<string> StringTable = new List<string>();
+        public Dictionary<int, AcsScript> Scripts = new();
+        public List<string> StringTable = new();
 
         public AcsFile(Stream stream) : this(stream, AcsFormatIdentifier.IdentifyFormat(stream)) { }
 
@@ -34,7 +35,7 @@ namespace DeACC
 
             stream.Seek(4, SeekOrigin.Begin);
                             
-            BinaryReader reader = new BinaryReader(InputStream);
+            BinaryReader reader = new(InputStream);
             int dirOffset = reader.ReadInt32();
 
             if (format == AcsFormat.ZDoomLower || format == AcsFormat.ZDoomUpper)
@@ -78,7 +79,7 @@ namespace DeACC
                 int pointer = reader.ReadInt32();
                 int argc = reader.ReadInt32();
 
-                scripts.Add(new Acs95ScriptDef
+                scripts.Add(new()
                 {
                     Number = number,
                     Pointer = pointer,
@@ -114,7 +115,7 @@ namespace DeACC
                 Console.WriteLine("Script " + id + " is of type " + type);
                 long pos = InputStream.Position;
 
-                AcsScript script = new AcsScript(def.Number, type, GenerateArgumentNames(def.Args, type), def.Pointer);
+                AcsScript script = new(def.Number, type, GenerateArgumentNames(def.Args, type), def.Pointer);
 
                 int len;
 
@@ -375,6 +376,7 @@ namespace DeACC
 
         private void WriteCode(AcsInstruction[] code, AcsScript script, AcsFunction function)
         {
+            StringBuilder builder = new();
             string[] arguments = script != null ? script.Arguments : function.Arguments;
             
             for (int j = 0; j < code.Length; j++)
@@ -382,7 +384,7 @@ namespace DeACC
                 AcsInstruction instruction = code[j];
                 AcsInstruction next = (j == code.Length - 1 ? null : code[j + 1]);
 
-                string s = $"    /* {instruction.Offset,8} */ > {instruction.Opcode.Name} ";
+                builder.Append($"    /* {instruction.Offset,8} */ > {instruction.Opcode.Name} ");
 
                 for (int i = 0; i < instruction.Arguments.Length; i++)
                 {
@@ -391,63 +393,63 @@ namespace DeACC
                         if (MapVariables.ContainsKey(instruction.Arguments[0])
                             && AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.PushMapVar))
                         {
-                            s += MapVariables[instruction.Arguments[0]].Name;
+                            builder.Append(MapVariables[instruction.Arguments[0]].Name);
                         }
                         else if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.PushScriptVar)
                             && instruction.Arguments[i] < arguments.Length)
                         {
-                            s += arguments[instruction.Arguments[i]];
+                            builder.Append(arguments[instruction.Arguments[i]]);
                         }
                         else if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.Call)
                                  || AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.CallDiscard))
                         {
                             if (instruction.Arguments[0] >= 0 && instruction.Arguments[0] < FunctionList.Count)
                             {
-                                s += FunctionList[instruction.Arguments[0]].Name;
+                                builder.Append(FunctionList[instruction.Arguments[0]].Name);
                             }
                             else
                             {
-                                s += instruction.Arguments[0] + " // unknown function!";
+                                builder.Append(instruction.Arguments[0]).Append(" // unknown function!");
                             }
                         }
                         else
                         {
-                            s += instruction.Arguments[i];
+                            builder.Append(instruction.Arguments[i]);
                         }
                     }
                     else if (i == 1 && CheckOpcode(code, j, OpcodeEnum.CallFunc))
                     {
                         AcsBuiltIn builtIn = (AcsBuiltIn)instruction.Arguments[i];
 
-                        s += Enum.GetName(builtIn);
+                        builder.Append(Enum.GetName(builtIn));
                     }
                     else
                     {
-                        s += instruction.Arguments[i];
+                        builder.Append(instruction.Arguments[i]);
                     }
 
                     if (i < instruction.Arguments.Length - 1)
                     {
-                        s += ", ";
+                        builder.Append(", ");
                     }
                 }
 
                 if (instruction.JumpTable != null)
                 {
-                    s += "{ ";
+                    builder.Append("{ ");
                     
                     int n = 0;
                     foreach (var entry in instruction.JumpTable)
                     {
-                        s += $"{entry.Key} -> {entry.Value}";
+                        builder.Append($"{entry.Key} -> {entry.Value}");
                         if (n < instruction.JumpTable.Count - 1)
                         {
-                            s += ", ";
+                            builder.Append(", ");
                         }
                         n++;
                     }
 
-                    s += " }";
+                    builder.Append(" }");
                 }
 
                 if (CheckOpcode(code, j, OpcodeEnum.PushByte) || CheckOpcode(code, j, OpcodeEnum.PushNumber))
@@ -456,11 +458,12 @@ namespace DeACC
                         || CheckOpcode(code, j + 2, OpcodeEnum.ThingSound))
                     {
                         int si = instruction.Arguments[0];
-                        s += $" // (String table index {si}): " + StringTable[si];
+                        builder.Append($" // (String table index {si}): {StringTable[si]}");
                     }
                 }
 
-                WriteLine(s);
+                WriteLine(builder.ToString());
+                builder.Clear();
             }
         }
 
@@ -510,7 +513,7 @@ namespace DeACC
 
         private string[] GenerateArgumentNames(int argc)
         {
-            List<string> list = new List<string>();
+            List<string> list = new();
             
             for (int i = 0; i < argc; i++)
             {
@@ -525,7 +528,7 @@ namespace DeACC
         {
             if (scriptType == ScriptType.Event)
             {
-                List<string> list = new List<string>();
+                List<string> list = new();
                 if (argc >= 1)
                 {
                     list.Add("eventType");
