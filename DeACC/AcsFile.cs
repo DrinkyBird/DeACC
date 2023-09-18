@@ -114,7 +114,7 @@ namespace DeACC
                 Console.WriteLine("Script " + id + " is of type " + type);
                 long pos = InputStream.Position;
 
-                AcsScript script = new AcsScript(def.Number, type, def.Args, def.Pointer);
+                AcsScript script = new AcsScript(def.Number, type, GenerateArgumentNames(def.Args, type), def.Pointer);
 
                 int len;
 
@@ -286,15 +286,14 @@ namespace DeACC
                 string returnType = (function.Returns ? "int" : "void");
                 string args;
 
-                if (function.NumberOfArguments > 0)
+                if (function.Arguments.Length > 0)
                 {
                     args = "";
-                    for (int i = 0; i < function.NumberOfArguments; i++)
+                    for (int i = 0; i < function.Arguments.Length; i++)
                     {
-                        args += $"int _p_{ParameterCounter:x4}_";
-                        ParameterCounter++;
+                        args += $"int {function.Arguments[i]}";
 
-                        if (i < function.NumberOfArguments - 1)
+                        if (i < function.Arguments.Length - 1)
                         {
                             args += ", ";
                         }
@@ -326,21 +325,20 @@ namespace DeACC
                 string type = "";
                 string flags = "";
 
-                if (script.NumberOfArguments > 0)
+                if (script.Arguments.Length > 0)
                 {
                     args = "(";
-                    for (int i = 0; i < script.NumberOfArguments; i++)
+                    for (int i = 0; i < script.Arguments.Length; i++)
                     {
-                        args += $"int _p_{ParameterCounter:x4}_";
-                        ParameterCounter++;
+                        args += $"int {script.Arguments[i]}";
 
-                        if (i < script.NumberOfArguments - 1)
+                        if (i < script.Arguments.Length - 1)
                         {
                             args += ", ";
                         }
                     }
                     args += ")";
-                } else if (script.NumberOfArguments == 0 && script.Type != ScriptType.Closed)
+                } else if (script.Arguments.Length == 0 && script.Type != ScriptType.Closed)
                 {
                     args = "";
                 }
@@ -501,6 +499,39 @@ namespace DeACC
 
             string s = Encoding.ASCII.GetString(array);
             return s;
+        }
+
+        private string[] GenerateArgumentNames(int argc)
+        {
+            List<string> list = new List<string>();
+            
+            for (int i = 0; i < argc; i++)
+            {
+                list.Add($"_p_{ParameterCounter:x4}_");
+                ParameterCounter++;
+            }
+
+            return list.ToArray();
+        }
+
+        private string[] GenerateArgumentNames(int argc, ScriptType scriptType)
+        {
+            if (scriptType == ScriptType.Event)
+            {
+                List<string> list = new List<string>();
+                if (argc >= 1)
+                {
+                    list.Add("eventType");
+                }
+                for (int i = 1; i < argc; i++)
+                {
+                    list.Add($"arg{i}");
+                }
+                
+                return list.ToArray();
+            }
+
+            return GenerateArgumentNames(argc);
         }
     }
 }

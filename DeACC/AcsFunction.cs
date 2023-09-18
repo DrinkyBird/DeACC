@@ -3,7 +3,7 @@
     class AcsFunction
     {
         public string Name;
-        public int NumberOfArguments { get; private set; }
+        public string[] Arguments { get; private set; }
         public int NumberOfVariables { get; private set; }
         public int ImportNum { get; private set; }
         public bool Returns { get; private set; }
@@ -14,9 +14,9 @@
 
         public bool IsImported => Pointer == 0;
 
-        public AcsFunction(int argc, int varc, bool returns, int importNum, int ptr)
+        public AcsFunction(string[] args, int varc, bool returns, int importNum, int ptr)
         {
-            NumberOfArguments = argc;
+            Arguments = args;
             NumberOfVariables = varc;
             ImportNum = importNum;
             Returns = returns;
