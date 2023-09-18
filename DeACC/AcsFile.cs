@@ -307,7 +307,7 @@ namespace DeACC
                 WriteLine($"// Pointer: {function.Pointer}; Size = {function.CodeSize}; ImportNum = {function.ImportNum}");
                 WriteLine($"function {returnType} {name} ({args})");
                 WriteLine("{");
-                WriteCode(function.Code);
+                WriteCode(function.Code, null, function);
                 WriteLine("}");
                 WriteLine();
             }
@@ -367,14 +367,16 @@ namespace DeACC
                 WriteLine($"Script {name}{argsSpace}{args}{typeSpace}{type} {flags}");
                 
                 WriteLine("{");
-                WriteCode(script.Code);
+                WriteCode(script.Code, script, null);
                 WriteLine("}");
                 WriteLine();
             }
         }
 
-        private void WriteCode(AcsInstruction[] code)
+        private void WriteCode(AcsInstruction[] code, AcsScript script, AcsFunction function)
         {
+            string[] arguments = script != null ? script.Arguments : function.Arguments;
+            
             for (int j = 0; j < code.Length; j++)
             {
                 AcsInstruction instruction = code[j];
@@ -390,6 +392,11 @@ namespace DeACC
                             && AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.PushMapVar))
                         {
                             s += MapVariables[instruction.Arguments[0]].Name;
+                        }
+                        else if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.PushScriptVar)
+                            && instruction.Arguments[i] < arguments.Length)
+                        {
+                            s += arguments[instruction.Arguments[i]];
                         }
                         else if (AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.Call)
                                  || AcsInstruction.OpcodesAreEqual(instruction.Opcode, OpcodeEnum.CallDiscard))
