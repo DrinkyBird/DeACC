@@ -31,7 +31,7 @@
         public int Number { get; private set; }
         public string Name { get; set; }
         public ScriptType Type { get; private set; }
-        public int NumberOfArguments { get; private set; }
+        public string[] Arguments { get; private set; }
 
         public AcsInstruction[] Code;
 
@@ -40,11 +40,11 @@
         public int Pointer { get; set; }
         public int CodeSize;
 
-        public AcsScript(int number, ScriptType type, int argc, int ptr)
+        public AcsScript(int number, ScriptType type, string[] args, int ptr)
         {
             Number = number;
             Type = type;
-            NumberOfArguments = argc;
+            Arguments = args;
             Pointer = ptr;
         }
     }

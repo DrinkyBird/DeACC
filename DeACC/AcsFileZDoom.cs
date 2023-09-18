@@ -178,7 +178,7 @@ namespace DeACC
                 byte importNum = reader.ReadByte();
                 int address = reader.ReadInt32();
                 
-                AcsFunction func = new AcsFunction(argc, varc, returns, importNum, address);
+                AcsFunction func = new AcsFunction(GenerateArgumentNames(argc), varc, returns, importNum, address);
 
                 FunctionList.Add(func);
             }
@@ -365,7 +365,7 @@ namespace DeACC
                     int argc = reader.ReadByte();
                     int address = reader.ReadInt32();
 
-                    AcsScript script = new AcsScript(number, type, argc, address);
+                    AcsScript script = new AcsScript(number, type, GenerateArgumentNames(argc, type), address);
                     Scripts[number] = script;
                 }
             }
@@ -380,7 +380,7 @@ namespace DeACC
                     int address = reader.ReadInt32();
                     int argc = reader.ReadInt32();
 
-                    AcsScript script = new AcsScript(number, type, argc, address);
+                    AcsScript script = new AcsScript(number, type, GenerateArgumentNames(argc, type), address);
                     Scripts[number] = script;
                 }
             }
