@@ -15,7 +15,9 @@
         Lightning = 12,
         Unloading,
         Disconnect,
-        Return
+        Return,
+        Event,
+        Kill
     }
 
     public enum ScriptFlags
