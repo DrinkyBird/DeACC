@@ -165,6 +165,18 @@
         GetActorSectorLocation,
         ChangeTeamScore,
         SetGameplaySetting,
+        SetCustomPlayerValue,
+        GetCustomPlayerValue,
+        ResetCustomDataToDefault,
+        LumpOpen,
+        LumpRead,
+        LumpReadString,
+        LumpReadArrayLocal,
+        LumpReadArrayModule,
+        LumpReadArrayHub,
+        LumpReadArrayGlobal,
+        LumpGetInfo,
+        LumpClose,
 
         // ZDaemon
         GetTeamScore = 19620,  // (int team)
