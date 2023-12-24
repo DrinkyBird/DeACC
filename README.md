@@ -7,7 +7,7 @@ File an [issue](https://foundry.creationsdeath.net/sean/DeACC/-/issues) if somet
 ## Usage
 
 Automatic builds are available for Windows, Linux, and macOS - go to the [CI jobs page](https://foundry.creationsdeath.net/sean/DeACC/-/jobs) and download the artefacts from the publish job for your platform.
-Alternatively, you can build DeACC yourself; the .NET 7.0 SDK is required.
+Alternatively, you can build DeACC yourself; the .NET 8.0 SDK is required.
 
 To disassemble an ACS object file, open a terminal/command prompt, change to the directory you downloaded the executable to, and run the command below.
 Replace `path_to_input.o` with your the object file you want to disassemble, and `path_to_output.bcs` with the file you want the disassembly to be written to.
