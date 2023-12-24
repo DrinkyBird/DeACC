@@ -28,3 +28,32 @@ tests:
   artifacts:
     reports:
       junit: test-result.xml
+
+.publish: &publish
+  stage: deploy
+  script:
+    - 'dotnet publish -r ${RID} -o deacc_publish_${RID} --self-contained -p:PublishSingleFile=true DeACC/DeACC.csproj'
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - deacc_publish_${RID}/*
+
+publish win-x64:
+  <<: *publish
+  variables:
+    RID: win-x64
+
+publish linux-x64:
+  <<: *publish
+  variables:
+    RID: linux-x64
+
+publish osx-x64:
+  <<: *publish
+  variables:
+    RID: osx-x64
+
+publish osx-arm64:
+  <<: *publish
+  variables:
+    RID: osx-arm64
