@@ -42,18 +42,23 @@ publish win-x64:
   <<: *publish
   variables:
     RID: win-x64
+    
+publish win-arm64:
+  <<: *publish
+  variables:
+    RID: win-arm64
 
 publish linux-x64:
   <<: *publish
   variables:
     RID: linux-x64
 
-publish osx-x64:
+publish linux-arm:
   <<: *publish
   variables:
-    RID: osx-x64
+    RID: linux-arm
 
-publish osx-arm64:
+publish linux-arm64:
   <<: *publish
   variables:
-    RID: osx-arm64
+    RID: linux-arm64
