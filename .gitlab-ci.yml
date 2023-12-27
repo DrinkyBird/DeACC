@@ -40,6 +40,8 @@ tests:
     expire_in: 1 week
     paths:
       - deacc_publish_${RID}/*
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
 
 publish win-x64:
   <<: *publish
