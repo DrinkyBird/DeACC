@@ -24,10 +24,13 @@ build:
 tests:
   stage: test
   script:
-    - 'dotnet test --no-restore --logger:"junit;LogFilePath=$CI_PROJECT_DIR/test-result.xml"'
+    - 'dotnet test --no-restore --logger:"junit;LogFilePath=$CI_PROJECT_DIR/test-result.xml" --collect:"XPlat Code Coverage" --results-directory cobertura'
   artifacts:
     reports:
       junit: test-result.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: cobertura/*/coverage.cobertura.xml
 
 .publish: &publish
   stage: deploy
