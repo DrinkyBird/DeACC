@@ -2,11 +2,11 @@
 
 **DeACC** is a bytecode disassembler for Hexen and ZDoom [ACS](https://doomwiki.org/wiki/ACS).
 Currently it mostly works, but may produce incorrect results in some cases due to incorrect data on opcodes and functions.
-File an [issue](https://foundry.creationsdeath.net/sean/DeACC/-/issues) if something's awry.
+File an [issue](https://dev.firestick.games/sean/DeACC/-/issues) if something's awry.
 
 ## Usage
 
-Automatic builds are available for Windows, Linux, and macOS - go to the [CI jobs page](https://foundry.creationsdeath.net/sean/DeACC/-/jobs) and download the artefacts from the publish job for your platform.
+Automatic builds are available for Windows, Linux, and macOS - go to the [CI jobs page](https://dev.firestick.games/sean/DeACC/-/jobs) and download the artefacts from the publish job for your platform.
 Alternatively, you can build DeACC yourself; the .NET 8.0 SDK is required.
 
 To disassemble an ACS object file, open a terminal/command prompt, change to the directory you downloaded the executable to, and run the command below.
