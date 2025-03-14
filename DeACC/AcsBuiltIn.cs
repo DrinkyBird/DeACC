@@ -91,22 +91,20 @@
         PickActor,
         IsPointerEqual,
         CanRaiseActor,
-
-        // [BB] Out of order ZDoom backport.
-        Warp = 92,
-
-        /* Zandronum's - these must be skipped when we reach 99!
-        -100:ResetMap(0),
-        -101 : PlayerIsSpectator(1),
-        -102 : ConsolePlayerNumber(0),
-        -103 : GetTeamProperty(2),
-        -104 : GetPlayerLivesLeft(1),
-        -105 : SetPlayerLivesLeft(2),
-        -106 : KickFromGame(2),
-        */
-
-        // [BB] Out of order ZDoom backport.
-        GetActorFloorTexture = 204,
+        SetActorTeleFog,
+        SwapActorTeleFog,
+        SetActorRoll,
+        ChangeActorRoll,
+        GetActorRoll,
+        QuakeEx,
+        Warp,
+        GetMaxInventory,
+        SetSectorDamage,
+        SetSectorTerrain,
+        SpawnParticle,
+        SetMusicVolume,
+        CheckProximity,
+        CheckActorState,
 
         // [BB] Skulltag functions
         ResetMap = 100,
@@ -177,7 +175,53 @@
         LumpReadArrayGlobal,
         LumpGetInfo,
         LumpClose,
+        Addbot,
+        RemoveBot,
+        OpenMenu,
+        CloseMenu,
+        BanFromGame,
+        GetPlayerStatus,
+        SetPlayerWeaponZoomFactor,
+        SetPlayerSkin,
+        GetPlayerSkin,
+        GetPlayerCountry,
+        SetNextMapPosition,
+        GivePlayerMedal,
+        GetPlayerJoinQueuePosition,
+        SkipJoinQueue,
+        GetControlPointInfo,
+        SetControlPointInfo,
+        GetSkinProperty,
+        IsPlayerContestingControlPoint,
 
+        // -1xx are reserved for Zandronum
+        CheckClass = 200,
+        DamageActor, // [arookas]
+        SetActorFlag,
+        SetTranslation,
+        GetActorFloorTexture,
+        GetActorFloorTerrain,
+        StrArg,
+        Floor,
+        Round,
+        Ceil,
+        ScriptCall,	// ACS does not know varargs so use something large as maximum.
+        StartSlideshow,
+        GetSectorHealth,
+        GetLineHealth,
+        SetSubtitleNumber,
+        GetNetID,
+        SetActivatorByNetID,
+        
+        // Eternity's
+        GetLineX = 300,
+        GetLineY,
+        SetAirFriction,
+	
+        // GZDoom OpenGL
+        SetSectorGlow = 400,
+        SetFogDensity,
+        
         // ZDaemon
         GetTeamScore = 19620,  // (int team)
         SetTeamScore,			// (int team, int value)
