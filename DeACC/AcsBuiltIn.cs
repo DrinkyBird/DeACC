@@ -175,7 +175,7 @@
         LumpReadArrayGlobal,
         LumpGetInfo,
         LumpClose,
-        Addbot,
+        AddBot,
         RemoveBot,
         OpenMenu,
         CloseMenu,
