@@ -784,7 +784,7 @@ namespace DeACC
             while (reader.BaseStream.Position - start < expectedSize)
             {
                 int offset = (int) reader.BaseStream.Position;
-                opcode = ReadOpcode(reader, (format == AcsFormat.Acs95));
+                opcode = ReadOpcode(reader, (format != AcsFormat.ZDoomLower));
 
                 List <int> args = new List<int>(opcode.NumberOfArguments);
                 Dictionary<int, int> jumpTable = null;
