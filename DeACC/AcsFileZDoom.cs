@@ -64,9 +64,15 @@ namespace DeACC
                 int size = reader.ReadInt32();
                 long pos = InputStream.Position;
 
-                _chunks.Add(new Chunk { Name = name, Position = pos, Size = size });
-
                 InputStream.Position += size;
+
+                // GDCC seems to store code in a chunk named with all NUL bytes
+                if (name == "\0\0\0\0")
+                {
+                    continue;
+                }
+
+                _chunks.Add(new Chunk { Name = name, Position = pos, Size = size });
 
                 Console.WriteLine($"Chunk {name} ({size} bytes at {pos:x8})");
             }
@@ -289,6 +295,11 @@ namespace DeACC
             if (r == def && DirOffset > p)
             {
                 r = DirOffset;
+            }
+
+            if (p < _chunks[0].Position && r >= _chunks[0].Position)
+            {
+                r = (int) _chunks[0].Position;
             }
 
             if (r == def)
