@@ -299,7 +299,7 @@ namespace DeACC
 
             if (p < _chunks[0].Position && r >= _chunks[0].Position)
             {
-                r = (int) _chunks[0].Position;
+                r = (int) _chunks[0].Position - 8;
             }
 
             if (r == def)
