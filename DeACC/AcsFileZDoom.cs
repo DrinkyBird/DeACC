@@ -46,7 +46,7 @@ namespace DeACC
         private Dictionary<int, string> ImportedMapVariables = new Dictionary<int, string>();
         private List<string> Libraries = new List<string>();
 
-        private void ReadZDoomAcs(ref BinaryReader reader)
+        private void ReadZDoomAcs(BinaryReader reader)
         {
             byte[] nameBytes = new byte[4];
 
@@ -77,32 +77,32 @@ namespace DeACC
                 Console.WriteLine($"Chunk {name} ({size} bytes at {pos:x8})");
             }
 
-            HandleChunks("ARAY", reader, (c, r) => ReadARAY(c, ref r));
-            HandleChunks("AINI", reader, (c, r) => ReadAINI(c, ref r));
-            HandleChunks("AIMP", reader, (c, r) => ReadAIMP(c, ref r));
-            HandleChunks("ASTR", reader, (c, r) => ReadASTR(c, ref r));
-            HandleChunks("FUNC", reader, (c, r) => ReadFUNC(c, ref r));
-            HandleChunks("FNAM", reader, (c, r) => ReadFNAM(c, ref r));
-            HandleChunks("MEXP", reader, (c, r) => ReadMEXP(c, ref r));
-            HandleChunks("MINI", reader, (c, r) => ReadMINI(c, ref r));
-            HandleChunks("MIMP", reader, (c, r) => ReadMIMP(c, ref r));
-            HandleChunks("MSTR", reader, (c, r) => ReadMSTR(c, ref r));
-            HandleChunks("SPTR", reader, (c, r) => ReadSPTR(c, ref r));
-            HandleChunks("SNAM", reader, (c, r) => ReadSNAM(c, ref r));
-            HandleChunks("SFLG", reader, (c, r) => ReadSFLG(c, ref r));
-            HandleChunks("LOAD", reader, (c, r) => ReadLOAD(c, ref r));
+            HandleChunks("ARAY", reader, (c, r) => ReadARAY(c, r));
+            HandleChunks("AINI", reader, (c, r) => ReadAINI(c, r));
+            HandleChunks("AIMP", reader, (c, r) => ReadAIMP(c, r));
+            HandleChunks("ASTR", reader, (c, r) => ReadASTR(c, r));
+            HandleChunks("FUNC", reader, (c, r) => ReadFUNC(c, r));
+            HandleChunks("FNAM", reader, (c, r) => ReadFNAM(c, r));
+            HandleChunks("MEXP", reader, (c, r) => ReadMEXP(c, r));
+            HandleChunks("MINI", reader, (c, r) => ReadMINI(c, r));
+            HandleChunks("MIMP", reader, (c, r) => ReadMIMP(c, r));
+            HandleChunks("MSTR", reader, (c, r) => ReadMSTR(c, r));
+            HandleChunks("SPTR", reader, (c, r) => ReadSPTR(c, r));
+            HandleChunks("SNAM", reader, (c, r) => ReadSNAM(c, r));
+            HandleChunks("SFLG", reader, (c, r) => ReadSFLG(c, r));
+            HandleChunks("LOAD", reader, (c, r) => ReadLOAD(c, r));
             HandleChunks("STRL", reader, (c, r) =>
             {
                 InputStream.Position = c.Position;
-                StringTable.AddRange(ReadStringTable(ref r, false, true));
+                StringTable.AddRange(ReadStringTable(r, false, true));
             });
             HandleChunks("STRE", reader, (c, r) =>
             {
                 InputStream.Position = c.Position;
-                StringTable.AddRange(ReadStringTable(ref r, true, true));
+                StringTable.AddRange(ReadStringTable(r, true, true));
             });
             
-            ReadCode(ref reader);
+            ReadCode(reader);
         }
 
         private void HandleChunks(string name, BinaryReader reader, Action<Chunk, BinaryReader> func)
@@ -116,11 +116,11 @@ namespace DeACC
             }
         }
 
-        private void ReadSNAM(Chunk chunk, ref BinaryReader reader)
+        private void ReadSNAM(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position;
             
-            string[] names = ReadStringTable(ref reader, false, false);
+            string[] names = ReadStringTable(reader, false, false);
 
             for (int i = 0; i < names.Length; i++)
             {
@@ -129,7 +129,7 @@ namespace DeACC
             }
         }
 
-        private void ReadLOAD(Chunk chunk, ref BinaryReader reader)
+        private void ReadLOAD(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position;
             
@@ -142,7 +142,7 @@ namespace DeACC
             }
         }
 
-        private void ReadMSTR(Chunk chunk, ref BinaryReader reader)
+        private void ReadMSTR(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position;
             
@@ -156,7 +156,7 @@ namespace DeACC
             }
         }
 
-        private void ReadASTR(Chunk chunk, ref BinaryReader reader)
+        private void ReadASTR(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position;
             
@@ -178,11 +178,11 @@ namespace DeACC
             }
         }
 
-        private void ReadMEXP(Chunk chunk, ref BinaryReader reader)
+        private void ReadMEXP(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position;
             
-            string[] names = ReadStringTable(ref reader, false, false);
+            string[] names = ReadStringTable(reader, false, false);
 
             for (int i = 0; i < MapVariables.Count; i++)
             {
@@ -207,7 +207,7 @@ namespace DeACC
             }
         }
 
-        private void ReadFUNC(Chunk chunk, ref BinaryReader reader)
+        private void ReadFUNC(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position;
             int numFuncs = chunk.Size / 8;
@@ -226,7 +226,7 @@ namespace DeACC
             }
         }
 
-        private void ReadCode(ref BinaryReader reader)
+        private void ReadCode(BinaryReader reader)
         {
             foreach (var script in Scripts)
             {
@@ -312,11 +312,11 @@ namespace DeACC
             return r;
         }
 
-        private void ReadFNAM(Chunk chunk, ref BinaryReader reader)
+        private void ReadFNAM(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position;
             
-            string[] names = ReadStringTable(ref reader, false, false);
+            string[] names = ReadStringTable(reader, false, false);
 
             for (int i = 0; i < names.Length; i++)
             {
@@ -326,7 +326,7 @@ namespace DeACC
             }
         }
 
-        private void ReadARAY(Chunk chunk, ref BinaryReader reader)
+        private void ReadARAY(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position;
             
@@ -351,7 +351,7 @@ namespace DeACC
             }
         }
 
-        private void ReadAINI(Chunk chunk, ref BinaryReader reader)
+        private void ReadAINI(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position - 4;
 
@@ -373,7 +373,7 @@ namespace DeACC
             }
         }
 
-        private void ReadAIMP(Chunk chunk, ref BinaryReader reader)
+        private void ReadAIMP(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position;
             int numArrays = reader.ReadInt32();
@@ -390,7 +390,7 @@ namespace DeACC
             }
         }
 
-        private void ReadMINI(Chunk chunk, ref BinaryReader reader)
+        private void ReadMINI(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position;
             
@@ -411,7 +411,7 @@ namespace DeACC
             }
         }
 
-        private void ReadMIMP(Chunk chunk, ref BinaryReader reader)
+        private void ReadMIMP(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position;
             
@@ -422,7 +422,7 @@ namespace DeACC
             }
         }
 
-        private void ReadSPTR(Chunk chunk, ref BinaryReader reader)
+        private void ReadSPTR(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position;
             
@@ -458,7 +458,7 @@ namespace DeACC
             }
         }
 
-        private void ReadSFLG(Chunk chunk, ref BinaryReader reader)
+        private void ReadSFLG(Chunk chunk, BinaryReader reader)
         {
             InputStream.Position = chunk.Position;
             
@@ -473,7 +473,7 @@ namespace DeACC
             }
         }
 
-        private string[] ReadStringTable(ref BinaryReader reader, bool encrypted, bool wastedInts)
+        private string[] ReadStringTable(BinaryReader reader, bool encrypted, bool wastedInts)
         {
             long baseOffset = InputStream.Position;
             if (wastedInts) reader.ReadInt32();

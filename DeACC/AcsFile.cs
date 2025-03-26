@@ -57,17 +57,17 @@ namespace DeACC
 
             if (format == AcsFormat.Acs95)
             {
-                ReadAcs95(ref reader, alternateAcs95ScriptSizeMethod);
+                ReadAcs95(reader, alternateAcs95ScriptSizeMethod);
             }
             else
             {
-                ReadZDoomAcs(ref reader);
+                ReadZDoomAcs(reader);
             }
 
             reader.Dispose();
         }
 
-        private void ReadAcs95(ref BinaryReader reader, bool alternateScriptSizeMethod)
+        private void ReadAcs95(BinaryReader reader, bool alternateScriptSizeMethod)
         {
             List<Acs95ScriptDef> scripts = new();
             int firstStringAddress = (int)InputStream.Position;
@@ -136,7 +136,7 @@ namespace DeACC
 
                     do
                     {
-                        AcsOpcode opcode = AcsInstruction.ReadOpcode(ref reader, true);
+                        AcsOpcode opcode = AcsInstruction.ReadOpcode(reader, true);
                         InputStream.Position += 4 * opcode.NumberOfArguments;
                         if (opcode.AsEnum() == OpcodeEnum.Terminate)
                         {

@@ -784,7 +784,7 @@ namespace DeACC
             while (reader.BaseStream.Position - start < expectedSize)
             {
                 int offset = (int) reader.BaseStream.Position;
-                opcode = ReadOpcode(ref reader, (format == AcsFormat.Acs95));
+                opcode = ReadOpcode(reader, (format == AcsFormat.Acs95));
 
                 List <int> args = new List<int>(opcode.NumberOfArguments);
                 Dictionary<int, int> jumpTable = null;
@@ -857,7 +857,7 @@ namespace DeACC
             }
         }
 
-        public static AcsOpcode ReadOpcode(ref BinaryReader reader, bool longFormat)
+        public static AcsOpcode ReadOpcode(BinaryReader reader, bool longFormat)
         {
             if (longFormat)
             {
