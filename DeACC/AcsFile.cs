@@ -376,6 +376,12 @@ namespace DeACC
 
         private void WriteCode(AcsInstruction[] code, AcsScript script, AcsFunction function)
         {
+            if (code == null)
+            {
+                WriteLine("    // Failed to disassemble.");
+                return;
+            }
+            
             StringBuilder builder = new();
             string[] arguments = script != null ? script.Arguments : function.Arguments;
             

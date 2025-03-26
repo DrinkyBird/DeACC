@@ -230,7 +230,14 @@ namespace DeACC
                 s.CodeSize = FindClosestPointer(s.Pointer) - s.Pointer;
 
                 InputStream.Seek(s.Pointer, SeekOrigin.Begin);
-                s.Code = AcsInstruction.ReadCode(Format, reader, s.CodeSize);
+                try
+                {
+                    s.Code = AcsInstruction.ReadCode(Format, reader, s.CodeSize);
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine($"Failed to read code from script {script.Key}: {e}");
+                }
             }
 
             foreach (var func in FunctionList)
@@ -238,7 +245,14 @@ namespace DeACC
                 func.CodeSize = FindClosestPointer(func.Pointer) - func.Pointer;
 
                 InputStream.Seek(func.Pointer, SeekOrigin.Begin);
-                func.Code = AcsInstruction.ReadCode(Format, reader, func.CodeSize);
+                try
+                {
+                    func.Code = AcsInstruction.ReadCode(Format, reader, func.CodeSize);
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine($"Failed to read code from function {func.Name}: {e}");
+                }
             }
         }
 
