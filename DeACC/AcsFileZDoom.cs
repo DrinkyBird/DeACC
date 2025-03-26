@@ -8,6 +8,13 @@ namespace DeACC
 {
     partial class AcsFile
     {
+        struct Chunk
+        {
+            public string Name;
+            public long Position;
+            public int Size;
+        }
+        
         struct ImportedArray
         {
             public int Size;
@@ -27,6 +34,8 @@ namespace DeACC
             public string Name;
             public bool IsString;
         }
+        
+        private List<Chunk> _chunks = new();
 
         private Dictionary<int, MapArray> MapArrays = new Dictionary<int, MapArray>();
         private Dictionary<int, bool> ArrayIsStringCache = new Dictionary<int, bool>();
@@ -55,38 +64,56 @@ namespace DeACC
                 int size = reader.ReadInt32();
                 long pos = InputStream.Position;
 
-                Console.WriteLine("Chunk " + name + " (" + size + " bytes)");
+                _chunks.Add(new Chunk { Name = name, Position = pos, Size = size });
 
-                if (name == "ARAY") ReadARAY(size, ref reader);
-                else if (name == "AINI") ReadAINI(size, ref reader);
-                else if (name == "AIMP") ReadAIMP(size, ref reader);
-                else if (name == "ASTR") ReadASTR(size, ref reader);
-                else if (name == "FUNC") ReadFUNC(size, ref reader);
-                else if (name == "FNAM") ReadFNAM(size, ref reader);
-                else if (name == "MEXP") ReadMEXP(size, ref reader);
-                else if (name == "MINI") ReadMINI(size, ref reader);
-                else if (name == "MIMP") ReadMIMP(size, ref reader);
-                else if (name == "MSTR") ReadMSTR(size, ref reader);
-                else if (name == "SPTR") ReadSPTR(size, ref reader);
-                else if (name == "SNAM") ReadSNAM(size, ref reader);
-                else if (name == "SFLG") ReadSFLG(size, ref reader);
-                else if (name == "STRL") StringTable.AddRange(ReadStringTable(ref reader, false, true));
-                else if (name == "STRE") StringTable.AddRange(ReadStringTable(ref reader, true, true));
-                else if (name == "LOAD") ReadLOAD(size, ref reader);
-                else
-                {
-                    Program.PrintError("Not implemented.");
-                    //throw new NotImplementedException(Format + " chunk " + name + " (" + size + ")");
-                }
+                InputStream.Position += size;
 
-                InputStream.Seek(pos + size, SeekOrigin.Begin);
+                Console.WriteLine($"Chunk {name} ({size} bytes at {pos:x8})");
             }
 
+            HandleChunks("ARAY", reader, (c, r) => ReadARAY(c, ref r));
+            HandleChunks("AINI", reader, (c, r) => ReadAINI(c, ref r));
+            HandleChunks("AIMP", reader, (c, r) => ReadAIMP(c, ref r));
+            HandleChunks("ASTR", reader, (c, r) => ReadASTR(c, ref r));
+            HandleChunks("FUNC", reader, (c, r) => ReadFUNC(c, ref r));
+            HandleChunks("FNAM", reader, (c, r) => ReadFNAM(c, ref r));
+            HandleChunks("MEXP", reader, (c, r) => ReadMEXP(c, ref r));
+            HandleChunks("MINI", reader, (c, r) => ReadMINI(c, ref r));
+            HandleChunks("MIMP", reader, (c, r) => ReadMIMP(c, ref r));
+            HandleChunks("MSTR", reader, (c, r) => ReadMSTR(c, ref r));
+            HandleChunks("SPTR", reader, (c, r) => ReadSPTR(c, ref r));
+            HandleChunks("SNAM", reader, (c, r) => ReadSNAM(c, ref r));
+            HandleChunks("SFLG", reader, (c, r) => ReadSFLG(c, ref r));
+            HandleChunks("LOAD", reader, (c, r) => ReadLOAD(c, ref r));
+            HandleChunks("STRL", reader, (c, r) =>
+            {
+                InputStream.Position = c.Position;
+                StringTable.AddRange(ReadStringTable(ref r, false, true));
+            });
+            HandleChunks("STRE", reader, (c, r) =>
+            {
+                InputStream.Position = c.Position;
+                StringTable.AddRange(ReadStringTable(ref r, true, true));
+            });
+            
             ReadCode(ref reader);
         }
 
-        private void ReadSNAM(int size, ref BinaryReader reader)
+        private void HandleChunks(string name, BinaryReader reader, Action<Chunk, BinaryReader> func)
         {
+            foreach (var chunk in _chunks)
+            {
+                if (chunk.Name == name)
+                {
+                    func(chunk, reader);
+                }
+            }
+        }
+
+        private void ReadSNAM(Chunk chunk, ref BinaryReader reader)
+        {
+            InputStream.Position = chunk.Position;
+            
             string[] names = ReadStringTable(ref reader, false, false);
 
             for (int i = 0; i < names.Length; i++)
@@ -96,10 +123,12 @@ namespace DeACC
             }
         }
 
-        private void ReadLOAD(int size, ref BinaryReader reader)
+        private void ReadLOAD(Chunk chunk, ref BinaryReader reader)
         {
+            InputStream.Position = chunk.Position;
+            
             long start = InputStream.Position;
-            long end = start + size;
+            long end = start + chunk.Size;
 
             while (InputStream.Position < end)
             {
@@ -107,9 +136,11 @@ namespace DeACC
             }
         }
 
-        private void ReadMSTR(int size, ref BinaryReader reader)
+        private void ReadMSTR(Chunk chunk, ref BinaryReader reader)
         {
-            int num = size / 4;
+            InputStream.Position = chunk.Position;
+            
+            int num = chunk.Size / 4;
             for (int i = 0; i < num; i++)
             {
                 int index = reader.ReadInt32();
@@ -119,9 +150,11 @@ namespace DeACC
             }
         }
 
-        private void ReadASTR(int size, ref BinaryReader reader)
+        private void ReadASTR(Chunk chunk, ref BinaryReader reader)
         {
-            int num = size / 4;
+            InputStream.Position = chunk.Position;
+            
+            int num = chunk.Size / 4;
             for (int i = 0; i < num; i++)
             {
                 int index = reader.ReadInt32();
@@ -139,8 +172,10 @@ namespace DeACC
             }
         }
 
-        private void ReadMEXP(int size, ref BinaryReader reader)
+        private void ReadMEXP(Chunk chunk, ref BinaryReader reader)
         {
+            InputStream.Position = chunk.Position;
+            
             string[] names = ReadStringTable(ref reader, false, false);
 
             for (int i = 0; i < MapVariables.Count; i++)
@@ -166,9 +201,10 @@ namespace DeACC
             }
         }
 
-        private void ReadFUNC(int size, ref BinaryReader reader)
+        private void ReadFUNC(Chunk chunk, ref BinaryReader reader)
         {
-            int numFuncs = size / 8;
+            InputStream.Position = chunk.Position;
+            int numFuncs = chunk.Size / 8;
 
             for (int i = 0; i < numFuncs; i++)
             {
@@ -251,8 +287,10 @@ namespace DeACC
             return r;
         }
 
-        private void ReadFNAM(int size, ref BinaryReader reader)
+        private void ReadFNAM(Chunk chunk, ref BinaryReader reader)
         {
+            InputStream.Position = chunk.Position;
+            
             string[] names = ReadStringTable(ref reader, false, false);
 
             for (int i = 0; i < names.Length; i++)
@@ -263,9 +301,11 @@ namespace DeACC
             }
         }
 
-        private void ReadARAY(int size, ref BinaryReader reader)
+        private void ReadARAY(Chunk chunk, ref BinaryReader reader)
         {
-            int numArrays = size / 8;
+            InputStream.Position = chunk.Position;
+            
+            int numArrays = chunk.Size / 8;
 
             for (int i = 0; i < numArrays; i++)
             {
@@ -286,9 +326,9 @@ namespace DeACC
             }
         }
 
-        private void ReadAINI(int size, ref BinaryReader reader)
+        private void ReadAINI(Chunk chunk, ref BinaryReader reader)
         {
-            InputStream.Seek(InputStream.Position - 4, SeekOrigin.Begin);
+            InputStream.Position = chunk.Position - 4;
 
             int numArrays = MapArrays.Count;
 
@@ -308,8 +348,9 @@ namespace DeACC
             }
         }
 
-        private void ReadAIMP(int size, ref BinaryReader reader)
+        private void ReadAIMP(Chunk chunk, ref BinaryReader reader)
         {
+            InputStream.Position = chunk.Position;
             int numArrays = reader.ReadInt32();
 
             for (int i = 0; i < numArrays; i++)
@@ -324,9 +365,11 @@ namespace DeACC
             }
         }
 
-        private void ReadMINI(int size, ref BinaryReader reader)
+        private void ReadMINI(Chunk chunk, ref BinaryReader reader)
         {
-            int numVars = (size / 4) - 1;
+            InputStream.Position = chunk.Position;
+            
+            int numVars = (chunk.Size / 4) - 1;
             int baseIndex = reader.ReadInt32();
 
             for (int i = 0; i < numVars; i++)
@@ -343,20 +386,24 @@ namespace DeACC
             }
         }
 
-        private void ReadMIMP(int size, ref BinaryReader reader)
+        private void ReadMIMP(Chunk chunk, ref BinaryReader reader)
         {
+            InputStream.Position = chunk.Position;
+            
             long start = InputStream.Position;
-            while ((InputStream.Position - start) < size - 1)
+            while ((InputStream.Position - start) < chunk.Size - 1)
             {
                 ImportedMapVariables[reader.ReadInt32()] = ReadString();
             }
         }
 
-        private void ReadSPTR(int size, ref BinaryReader reader)
+        private void ReadSPTR(Chunk chunk, ref BinaryReader reader)
         {
+            InputStream.Position = chunk.Position;
+            
             if (HexenFaked)
             {
-                int numScripts = size / 8;
+                int numScripts = chunk.Size / 8;
 
                 for (int i = 0; i < numScripts; i++)
                 {
@@ -371,7 +418,7 @@ namespace DeACC
             }
             else
             {
-                int numScripts = size / 12;
+                int numScripts = chunk.Size / 12;
 
                 for (int i = 0; i < numScripts; i++)
                 {
@@ -386,9 +433,11 @@ namespace DeACC
             }
         }
 
-        private void ReadSFLG(int size, ref BinaryReader reader)
+        private void ReadSFLG(Chunk chunk, ref BinaryReader reader)
         {
-            int numScripts = size / 8;
+            InputStream.Position = chunk.Position;
+            
+            int numScripts = chunk.Size / 8;
 
             for (int i = 0; i < numScripts; i++)
             {
