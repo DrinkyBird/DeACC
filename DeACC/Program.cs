@@ -20,6 +20,8 @@ namespace DeACC
 
             [Option("alternate-acs-95-size-method", HelpText = "Uses an alternate method to determine the size of ACS95 scripts. This calculates the size of Hexen's scripts correctly, but might not work reliably.")]
             public bool UseAlternateAcs95SizeMethod { get; set; }
+            [Option("ignore-nops", HelpText = "Don't output Nop instructions, useful for GDCC which appears to use them to pad instructions to 4 bytes")]
+            public bool IgnoreNops { get; set; }
         }
 
         [Verb("export-opcodes", HelpText = "Exports the opcodes to a file", Hidden = true)]
@@ -82,7 +84,7 @@ namespace DeACC
             FileStream outputStream = new FileStream(outputPath, FileMode.OpenOrCreate, FileAccess.Write);
 
             global::DeACC.AcsFile file = new global::DeACC.AcsFile(stream, format, alternateAcs95ScriptSizeMethod: options.UseAlternateAcs95SizeMethod);
-            file.Disassemble(outputStream);
+            file.Disassemble(outputStream, options.IgnoreNops);
 
             outputStream.Dispose();
             stream.Dispose();
