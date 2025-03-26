@@ -156,7 +156,7 @@ namespace DeACC
             }
         }
 
-        public void Disassemble(Stream outputStream, bool ignoreNops = false)
+        public void Disassemble(Stream outputStream)
         {
             OutputStream = outputStream;
 
@@ -308,7 +308,7 @@ namespace DeACC
                 WriteLine($"// Pointer: {function.Pointer}; Size = {function.CodeSize}; ImportNum = {function.ImportNum}");
                 WriteLine($"function {returnType} {name} ({args})");
                 WriteLine("{");
-                WriteCode(function.Code, null, function, ignoreNops);
+                WriteCode(function.Code, null, function);
                 WriteLine("}");
                 WriteLine();
             }
@@ -368,13 +368,13 @@ namespace DeACC
                 WriteLine($"Script {name}{argsSpace}{args}{typeSpace}{type} {flags}");
                 
                 WriteLine("{");
-                WriteCode(script.Code, script, null, ignoreNops);
+                WriteCode(script.Code, script, null);
                 WriteLine("}");
                 WriteLine();
             }
         }
 
-        private void WriteCode(AcsInstruction[] code, AcsScript script, AcsFunction function, bool ignoreNops)
+        private void WriteCode(AcsInstruction[] code, AcsScript script, AcsFunction function)
         {
             if (code == null)
             {
@@ -389,11 +389,6 @@ namespace DeACC
             {
                 AcsInstruction instruction = code[j];
                 AcsInstruction next = (j == code.Length - 1 ? null : code[j + 1]);
-
-                if (instruction.Opcode.AsEnum() == OpcodeEnum.Nop && ignoreNops)
-                {
-                    continue;
-                }
 
                 builder.Append($"    /* {instruction.Offset,8} */ > {instruction.Opcode.Name} ");
 
