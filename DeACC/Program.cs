@@ -122,7 +122,7 @@ namespace DeACC
                     output += " ";
                 }
 
-                output += $"; Id = " + Enum.GetName(value.AsEnum());
+                output += $"; Id = " + Enum.GetName(value.AsEnum);
 
                 for (int i = 0; i < longestName - value.Name.Length; i++)
                 {

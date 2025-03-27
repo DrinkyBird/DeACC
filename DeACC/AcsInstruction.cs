@@ -381,7 +381,7 @@ namespace DeACC
         public int NumberOfArguments;
         public Type[] ArgumentTypes;
 
-        public OpcodeEnum AsEnum() => (OpcodeEnum)Id;
+        public OpcodeEnum AsEnum => (OpcodeEnum)Id;
 
         public AcsOpcode()
         {

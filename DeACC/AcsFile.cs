@@ -138,7 +138,7 @@ namespace DeACC
                     {
                         AcsOpcode opcode = AcsInstruction.ReadOpcode(reader, true);
                         InputStream.Position += 4 * opcode.NumberOfArguments;
-                        if (opcode.AsEnum() == OpcodeEnum.Terminate)
+                        if (opcode.AsEnum == OpcodeEnum.Terminate)
                         {
                             break;
                         }
